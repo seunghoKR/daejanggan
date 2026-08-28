@@ -1,0 +1,35 @@
+# ============================================================
+# Git Ignore Rules for 도서출판 대장간 신규 쇼핑몰
+# ============================================================
+
+# 대용량 이미지 및 패키지 파일 (로컬/서버 동기화용 별도 관리)
+/data/
+/uploads/
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 데이터베이스 덤프 및 마이그레이션 백업 파일
+*.sql
+*.sql.gz
+
+# PDF 및 기타 비정형 문서
+*.pdf
+
+# 임시 스크립트 및 테스트 파일
+/scratch/
+test_*.php
+check_*.php
+inspect_*.php
+verify_*.php
+*.tmp
+*.log
+
+# 환경 및 IDE 설정
+.env
+.env.local
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

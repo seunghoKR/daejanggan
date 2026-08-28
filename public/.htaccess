@@ -1,0 +1,63 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /
+
+# ============================================================
+# 영카트 레거시 URL SEO 301 리디렉션
+# ============================================================
+
+# 1. 도서 상세 페이지: shop/item.php?it_id=XXX → /book/XXX
+RewriteCond %{QUERY_STRING} ^it_id=([a-zA-Z0-9_-]+)
+RewriteRule ^shop/item\.php$ /book/%1? [R=301,L]
+
+# 2. 카테고리 목록: shop/list.php?ca_id=10 → /category/10
+RewriteCond %{QUERY_STRING} ^ca_id=([0-9a-zA-Z]+)
+RewriteRule ^shop/list\.php$ /category/%1? [R=301,L]
+
+# 3. 게시판: bbs/board.php?bo_table=notice → /community/notice
+RewriteCond %{QUERY_STRING} bo_table=([a-zA-Z0-9_]+)
+RewriteRule ^bbs/board\.php$ /community/%1? [R=301,L]
+
+# 4. 게시판 글 보기: bbs/board.php?bo_table=notice&wr_id=5 → /community/notice/5
+RewriteCond %{QUERY_STRING} bo_table=([a-zA-Z0-9_]+)&wr_id=([0-9]+)
+RewriteRule ^bbs/board\.php$ /community/%1/%2? [R=301,L]
+
+# 5. 영카트 장바구니/주문
+RewriteRule ^shop/cart\.php$ /cart [R=301,L]
+RewriteRule ^shop/order\.php$ /order/checkout [R=301,L]
+
+# 6. 영카트 회원 페이지
+RewriteRule ^bbs/login\.php$ /login [R=301,L]
+RewriteRule ^bbs/register\.php$ /register [R=301,L]
+
+# ============================================================
+# Front Controller — 정적 파일은 직접 서빙, 나머지는 index.php로
+# ============================================================
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# ============================================================
+# 보안 헤더
+# ============================================================
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# PHP 설정
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 60
+</IfModule>
+
+# uploads 디렉토리 PHP 실행 차단
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phar)$">
+    <If "%{REQUEST_URI} =~ m#^/uploads/#">
+        Require all denied
+    </If>
+</FilesMatch>
