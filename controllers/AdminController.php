@@ -102,8 +102,8 @@ final class AdminController
     public static function bookCreate(array $params = []): void
     {
         self::boot();
-        $categories = Database::fetchAll("SELECT id, name FROM categories ORDER BY sort_order");
-        $seriesList = Database::fetchAll("SELECT id, name FROM series ORDER BY sort_order");
+        $categories = Database::fetchAll("SELECT id, code, parent_code, name, type FROM categories ORDER BY sort_order ASC, code ASC");
+        $seriesList = Database::fetchAll("SELECT id, name FROM series ORDER BY sort_order ASC");
         include APP_ROOT . '/views/admin/book_form.php';
     }
 
@@ -166,73 +166,124 @@ final class AdminController
     }
 
     // ----------------------------------------------------------------
-    // 도서 등록 처리
+    // 도서 등록 처리 (철저한 예외 처리 및 카테고리 자동 동기화)
     // ----------------------------------------------------------------
     public static function bookStore(array $params = []): void
     {
         self::boot();
 
-        $coverImage = DEFAULT_BOOK_IMG;
-        $detailImages = null;
-
-        // 다중 이미지 드래그 업로드 목록 확인 (JSON 형태 전달)
-        $imageListRaw = trim($_POST['image_list'] ?? '');
-        if (!empty($imageListRaw)) {
-            $imgs = json_decode($imageListRaw, true);
-            if (is_array($imgs) && count($imgs) > 0) {
-                $coverImage = $imgs[0];
-                $detailImages = json_encode($imgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        try {
+            $title = trim($_POST['title'] ?? '');
+            if (empty($title)) {
+                throw new \InvalidArgumentException('도서명을 입력해 주세요.');
             }
-        }
 
-        // 단일 파일 업로드 폴백
-        if ($coverImage === DEFAULT_BOOK_IMG && !empty($_FILES['cover_image']['name'])) {
-            try {
+            $coverImage = DEFAULT_BOOK_IMG;
+            $detailImages = null;
+
+            // 다중 이미지 드래그 업로드 목록 확인 (JSON 형태 전달)
+            $imageListRaw = trim($_POST['image_list'] ?? '');
+            if (!empty($imageListRaw)) {
+                $imgs = json_decode($imageListRaw, true);
+                if (is_array($imgs) && count($imgs) > 0) {
+                    $validImgs = array_values(array_filter($imgs, fn($u) => !empty($u) && is_string($u)));
+                    if (!empty($validImgs)) {
+                        $coverImage = $validImgs[0];
+                        $detailImages = json_encode($validImgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    }
+                }
+            }
+
+            // 단일 파일 업로드 폴백
+            if ($coverImage === DEFAULT_BOOK_IMG && !empty($_FILES['cover_image']['name'])) {
                 $uploader   = new FileUploader('books');
                 $coverImage = $uploader->upload($_FILES['cover_image']);
                 $detailImages = json_encode([$coverImage], JSON_UNESCAPED_SLASHES);
-            } catch (\RuntimeException $e) {
-                $_SESSION['_flash_error'] = $e->getMessage();
-                header('Location: /admin/books/create');
-                exit;
             }
+
+            // 날짜 형식 정제 (YYYY-MM-DD)
+            $publishDate = trim($_POST['publish_date'] ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $publishDate)) {
+                $publishDate = null;
+            }
+
+            // 카테고리 정보 조회 (code 매칭용)
+            $categoryId = (int)($_POST['category_id'] ?? 0);
+            $cat = Database::fetchOne("SELECT id, code FROM categories WHERE id = ?", [$categoryId]);
+            if (!$cat) {
+                // 기본 첫 번째 카테고리로 매칭
+                $cat = Database::fetchOne("SELECT id, code FROM categories ORDER BY id ASC LIMIT 1");
+                $categoryId = (int)($cat['id'] ?? 1);
+            }
+            $catCode = $cat['code'] ?? '1040';
+
+            // 시리즈 ID 유효성 체크
+            $seriesId = !empty($_POST['series_id']) ? (int)$_POST['series_id'] : null;
+            if ($seriesId !== null) {
+                $serExists = Database::fetchOne("SELECT id FROM series WHERE id = ?", [$seriesId]);
+                if (!$serExists) {
+                    $seriesId = null;
+                }
+            }
+
+            $bookCode = trim($_POST['book_code'] ?? '') ?: ('BK' . date('ymdHis'));
+            $bookCode = mb_substr($bookCode, 0, 100);
+
+            $isbn = trim($_POST['isbn'] ?? '');
+            $isbn = !empty($isbn) ? mb_substr($isbn, 0, 100) : null;
+
+            Database::execute(
+                "INSERT INTO books
+                 (book_code, category_id, category_codes, series_id, title, subtitle, author, translator,
+                  publisher, publish_date, isbn, original_price, price, stock_qty,
+                  summary, description, cover_image, detail_images, is_new, is_best, is_recommend, is_discount, status)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                [
+                    $bookCode,
+                    $categoryId,
+                    $catCode,
+                    $seriesId,
+                    mb_substr($title, 0, 255),
+                    trim($_POST['subtitle']       ?? '') ? mb_substr(trim($_POST['subtitle']), 0, 255) : null,
+                    mb_substr(trim($_POST['author'] ?? '도서출판 대장간'), 0, 150),
+                    trim($_POST['translator']     ?? '') ? mb_substr(trim($_POST['translator']), 0, 150) : null,
+                    mb_substr(trim($_POST['publisher'] ?? '도서출판 대장간') ?: '도서출판 대장간', 0, 150),
+                    $publishDate,
+                    $isbn,
+                    max(0, (int)($_POST['original_price'] ?? 0)),
+                    max(0, (int)($_POST['price']          ?? 0)),
+                    max(0, (int)($_POST['stock_qty']      ?? 100)),
+                    trim($_POST['summary']         ?? '') ?: null,
+                    $_POST['description']          ?? null,
+                    $coverImage,
+                    $detailImages,
+                    isset($_POST['is_new'])       ? 1 : 0,
+                    isset($_POST['is_best'])      ? 1 : 0,
+                    isset($_POST['is_recommend']) ? 1 : 0,
+                    isset($_POST['is_discount'])  ? 1 : 0,
+                    $_POST['status']              ?? 'SALE',
+                ]
+            );
+
+            $newBookId = (int)Database::lastInsertId();
+
+            // book_categories 테이블에 다중 카테고리 매핑 자동 등록
+            if ($newBookId > 0 && !empty($catCode)) {
+                Database::execute(
+                    "INSERT INTO book_categories (book_id, category_code) VALUES (?, ?)",
+                    [$newBookId, $catCode]
+                );
+            }
+
+            $_SESSION['_flash_success'] = '도서가 성공적으로 등록되었습니다.';
+            header('Location: /admin/books');
+            exit;
+
+        } catch (\Throwable $e) {
+            $_SESSION['_flash_error'] = '도서 등록 중 오류가 발생했습니다: ' . $e->getMessage();
+            header('Location: /admin/books/create');
+            exit;
         }
-
-        Database::execute(
-            "INSERT INTO books
-             (book_code, category_id, series_id, title, subtitle, author, translator,
-              publisher, publish_date, isbn, original_price, price, stock_qty,
-              summary, description, cover_image, detail_images, is_new, is_best, is_recommend, is_discount, status)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            [
-                trim($_POST['book_code']      ?? '') ?: ('BK' . date('ymdHis')),
-                (int)($_POST['category_id']   ?? 1),
-                !empty($_POST['series_id']) ? (int)$_POST['series_id'] : null,
-                trim($_POST['title']          ?? ''),
-                trim($_POST['subtitle']       ?? ''),
-                trim($_POST['author']         ?? ''),
-                trim($_POST['translator']     ?? '') ?: null,
-                trim($_POST['publisher']      ?? '도서출판 대장간'),
-                !empty($_POST['publish_date']) ? $_POST['publish_date'] : null,
-                trim($_POST['isbn']           ?? '') ?: null,
-                (int)($_POST['original_price'] ?? 0),
-                (int)($_POST['price']          ?? 0),
-                (int)($_POST['stock_qty']      ?? 100),
-                trim($_POST['summary']         ?? '') ?: null,
-                $_POST['description']          ?? null,
-                $coverImage,
-                $detailImages,
-                isset($_POST['is_new'])       ? 1 : 0,
-                isset($_POST['is_best'])      ? 1 : 0,
-                isset($_POST['is_recommend']) ? 1 : 0,
-                isset($_POST['is_discount'])  ? 1 : 0,
-                $_POST['status']              ?? 'SALE',
-            ]
-        );
-
-        $_SESSION['_flash_success'] = '도서가 성공적으로 등록되었습니다.';
-        header('Location: /admin/books');
-        exit;
     }
 
     // ----------------------------------------------------------------
@@ -244,84 +295,153 @@ final class AdminController
         $bookId     = (int)($params['id'] ?? 0);
         $book       = Database::fetchOne("SELECT * FROM books WHERE id = ?", [$bookId]);
         if (!$book) { http_response_code(404); exit; }
-        $categories = Database::fetchAll("SELECT id, name FROM categories ORDER BY sort_order");
-        $seriesList = Database::fetchAll("SELECT id, name FROM series ORDER BY sort_order");
+        $categories = Database::fetchAll("SELECT id, code, parent_code, name, type FROM categories ORDER BY sort_order ASC, code ASC");
+        $seriesList = Database::fetchAll("SELECT id, name FROM series ORDER BY sort_order ASC");
         include APP_ROOT . '/views/admin/book_form.php';
     }
 
     // ----------------------------------------------------------------
-    // 도서 수정 처리
+    // 도서 수정 처리 (철저한 예외 처리 및 카테고리 자동 동기화)
     // ----------------------------------------------------------------
     public static function bookUpdate(array $params = []): void
     {
         self::boot();
         $bookId = (int)($params['id'] ?? 0);
         $book   = Database::fetchOne("SELECT * FROM books WHERE id = ?", [$bookId]);
-        if (!$book) { http_response_code(404); exit; }
-
-        $coverImage = $book['cover_image'];
-        $detailImages = $book['detail_images'];
-
-        // 다중 이미지 드래그 업로드 목록 확인
-        $imageListRaw = trim($_POST['image_list'] ?? '');
-        if (!empty($imageListRaw)) {
-            $imgs = json_decode($imageListRaw, true);
-            if (is_array($imgs) && count($imgs) > 0) {
-                $coverImage = $imgs[0];
-                $detailImages = json_encode($imgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            }
+        if (!$book) {
+            $_SESSION['_flash_error'] = '해당 도서를 찾을 수 없습니다.';
+            header('Location: /admin/books');
+            exit;
         }
 
-        // 단일 파일 업로드 폴백
-        if (!empty($_FILES['cover_image']['name'])) {
-            try {
+        try {
+            $title = trim($_POST['title'] ?? '');
+            if (empty($title)) {
+                throw new \InvalidArgumentException('도서명을 입력해 주세요.');
+            }
+
+            $coverImage = $book['cover_image'];
+            $detailImages = $book['detail_images'];
+
+            // 다중 이미지 드래그 업로드 목록 확인
+            $imageListRaw = trim($_POST['image_list'] ?? '');
+            if (!empty($imageListRaw)) {
+                $imgs = json_decode($imageListRaw, true);
+                if (is_array($imgs) && count($imgs) > 0) {
+                    $validImgs = array_values(array_filter($imgs, fn($u) => !empty($u) && is_string($u)));
+                    if (!empty($validImgs)) {
+                        $coverImage = $validImgs[0];
+                        $detailImages = json_encode($validImgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    }
+                }
+            }
+
+            // 단일 파일 업로드 폴백
+            if (!empty($_FILES['cover_image']['name'])) {
                 $uploader   = new FileUploader('books');
                 $newImg     = $uploader->upload($_FILES['cover_image']);
                 $coverImage = $newImg;
-                $detailImages = json_encode([$coverImage], JSON_UNESCAPED_SLASHES);
-            } catch (\RuntimeException $e) {
-                $_SESSION['_flash_error'] = $e->getMessage();
-                header('Location: /admin/books/' . $bookId . '/edit');
-                exit;
+                $detailImages = json_encode([$newImg], JSON_UNESCAPED_SLASHES);
             }
+
+            // 날짜 형식 정제
+            $publishDate = trim($_POST['publish_date'] ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $publishDate)) {
+                $publishDate = null;
+            }
+
+            // 카테고리 정보 조회
+            $categoryId = (int)($_POST['category_id'] ?? $book['category_id']);
+            $cat = Database::fetchOne("SELECT id, code FROM categories WHERE id = ?", [$categoryId]);
+            $catCode = $cat['code'] ?? ($book['category_codes'] ?: '1040');
+
+            // 시리즈 ID 유효성 체크
+            $seriesId = !empty($_POST['series_id']) ? (int)$_POST['series_id'] : null;
+            if ($seriesId !== null) {
+                $serExists = Database::fetchOne("SELECT id FROM series WHERE id = ?", [$seriesId]);
+                if (!$serExists) {
+                    $seriesId = null;
+                }
+            }
+
+            $isbn = trim($_POST['isbn'] ?? '');
+            $isbn = !empty($isbn) ? mb_substr($isbn, 0, 100) : null;
+
+            Database::execute(
+                "UPDATE books SET
+                    category_id    = ?,
+                    category_codes = ?,
+                    series_id      = ?,
+                    title          = ?,
+                    subtitle       = ?,
+                    author         = ?,
+                    translator     = ?,
+                    publisher      = ?,
+                    publish_date   = ?,
+                    isbn           = ?,
+                    original_price = ?,
+                    price          = ?,
+                    stock_qty      = ?,
+                    summary        = ?,
+                    description    = ?,
+                    cover_image    = ?,
+                    detail_images  = ?,
+                    is_new         = ?,
+                    is_best        = ?,
+                    is_recommend   = ?,
+                    is_discount    = ?,
+                    status         = ?
+                 WHERE id = ?",
+                [
+                    $categoryId,
+                    $catCode,
+                    $seriesId,
+                    mb_substr($title, 0, 255),
+                    trim($_POST['subtitle']       ?? '') ? mb_substr(trim($_POST['subtitle']), 0, 255) : null,
+                    mb_substr(trim($_POST['author'] ?? '도서출판 대장간'), 0, 150),
+                    trim($_POST['translator']     ?? '') ? mb_substr(trim($_POST['translator']), 0, 150) : null,
+                    mb_substr(trim($_POST['publisher'] ?? '도서출판 대장간') ?: '도서출판 대장간', 0, 150),
+                    $publishDate,
+                    $isbn,
+                    max(0, (int)($_POST['original_price'] ?? 0)),
+                    max(0, (int)($_POST['price']          ?? 0)),
+                    max(0, (int)($_POST['stock_qty']      ?? 100)),
+                    trim($_POST['summary']         ?? '') ?: null,
+                    $_POST['description']          ?? null,
+                    $coverImage,
+                    $detailImages,
+                    isset($_POST['is_new'])       ? 1 : 0,
+                    isset($_POST['is_best'])      ? 1 : 0,
+                    isset($_POST['is_recommend']) ? 1 : 0,
+                    isset($_POST['is_discount'])  ? 1 : 0,
+                    $_POST['status']              ?? 'SALE',
+                    $bookId,
+                ]
+            );
+
+            // book_categories 매핑 업데이트
+            if (!empty($catCode)) {
+                $exists = Database::fetchOne(
+                    "SELECT id FROM book_categories WHERE book_id = ? AND category_code = ?",
+                    [$bookId, $catCode]
+                );
+                if (!$exists) {
+                    Database::execute(
+                        "INSERT INTO book_categories (book_id, category_code) VALUES (?, ?)",
+                        [$bookId, $catCode]
+                    );
+                }
+            }
+
+            $_SESSION['_flash_success'] = '도서 정보가 성공적으로 수정되었습니다.';
+            header('Location: /admin/books');
+            exit;
+
+        } catch (\Throwable $e) {
+            $_SESSION['_flash_error'] = '도서 수정 중 오류가 발생했습니다: ' . $e->getMessage();
+            header('Location: /admin/books/' . $bookId . '/edit');
+            exit;
         }
-
-        Database::execute(
-            "UPDATE books SET
-               category_id=?, series_id=?, title=?, subtitle=?, author=?, translator=?,
-               publisher=?, publish_date=?, isbn=?, original_price=?, price=?, stock_qty=?,
-               summary=?, description=?, cover_image=?, detail_images=?,
-               is_new=?, is_best=?, is_recommend=?, is_discount=?, status=?
-             WHERE id=?",
-            [
-                (int)($_POST['category_id']   ?? 1),
-                !empty($_POST['series_id']) ? (int)$_POST['series_id'] : null,
-                trim($_POST['title']          ?? ''),
-                trim($_POST['subtitle']       ?? ''),
-                trim($_POST['author']         ?? ''),
-                trim($_POST['translator']     ?? '') ?: null,
-                trim($_POST['publisher']      ?? '도서출판 대장간'),
-                !empty($_POST['publish_date']) ? $_POST['publish_date'] : null,
-                trim($_POST['isbn']           ?? '') ?: null,
-                (int)($_POST['original_price'] ?? 0),
-                (int)($_POST['price']          ?? 0),
-                (int)($_POST['stock_qty']      ?? 0),
-                trim($_POST['summary']         ?? '') ?: null,
-                $_POST['description']          ?? null,
-                $coverImage,
-                $detailImages,
-                isset($_POST['is_new'])       ? 1 : 0,
-                isset($_POST['is_best'])      ? 1 : 0,
-                isset($_POST['is_recommend']) ? 1 : 0,
-                isset($_POST['is_discount'])  ? 1 : 0,
-                $_POST['status']              ?? 'SALE',
-                $bookId,
-            ]
-        );
-
-        $_SESSION['_flash_success'] = '도서 정보가 성공적으로 수정되었습니다.';
-        header('Location: /admin/books');
-        exit;
     }
 
     // ----------------------------------------------------------------

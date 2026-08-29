@@ -133,7 +133,7 @@ class AiBookParser
                     $data['publish_date'] = self::formatDate(trim($m[1]));
                     $hasKeyInLine = true;
                 } elseif (preg_match('/^ISBN\s*[:：]\s*(.+)$/iu', $seg, $m)) {
-                    $data['isbn'] = trim($m[1]);
+                    $data['isbn'] = mb_substr(trim($m[1]), 0, 100);
                     $hasKeyInLine = true;
                 } elseif (preg_match('/^(?:페이지|쪽수|면수)\s*[:：]\s*(.+)$/u', $seg, $m)) {
                     $data['page_count'] = trim($m[1]);
@@ -159,15 +159,22 @@ class AiBookParser
         }
 
         // [일반 규칙 반영]:
-        // 첫 번째 줄 -> 특별한 구분명칭이 없는 경우 도서제목(title)
+        // 첫 번째 줄 -> 특별한 구분명칭이 없는 경우 도서제목(title) (양쪽 끝 기호 <>, 《》, "", '' 등 자동 제거)
         // 두 번째 줄 -> 특별한 구분명칭이 없는 경우 부제목(subtitle)
         if (!empty($unlabelledLines)) {
             if (empty($data['title']) && isset($unlabelledLines[0])) {
-                $data['title'] = $unlabelledLines[0];
+                $data['title'] = self::cleanTitle($unlabelledLines[0]);
             }
             if (empty($data['subtitle']) && isset($unlabelledLines[1])) {
-                $data['subtitle'] = $unlabelledLines[1];
+                $data['subtitle'] = self::cleanTitle($unlabelledLines[1]);
             }
+        }
+
+        if (!empty($data['title'])) {
+            $data['title'] = self::cleanTitle($data['title']);
+        }
+        if (!empty($data['subtitle'])) {
+            $data['subtitle'] = self::cleanTitle($data['subtitle']);
         }
 
         // 역자에 감수자 병합 (예: 김태형 외 (감수: 이상억))
@@ -367,7 +374,52 @@ class AiBookParser
             $content = $m[1];
         }
 
-        $decoded = json_decode(trim($content), true);
-        return is_array($decoded) ? $decoded : [];
+        $parsed = json_decode($content, true);
+        return is_array($parsed) ? $parsed : [];
+    }
+
+    /**
+     * 도서 제목 및 부제목 양끝의 특수 기호(<>, 《》, 「」, 『』, "", '', [] 등) 자동 제거 헬퍼 (UTF-8 안전)
+     */
+    public static function cleanTitle(string $str): string
+    {
+        $str = trim($str);
+        if ($str === '') {
+            return '';
+        }
+
+        $patterns = [
+            '/^<(.+)>$/us',
+            '/^〈(.+)〉$/us',
+            '/^《(.+)》$/us',
+            '/^«(.+)»$/us',
+            '/^「(.+)」$/us',
+            '/^『(.+)』$/us',
+            '/^\[(.+)\]$/us',
+            '/^\{(.+)\}$/us',
+            '/^\((.+)\)$/us',
+            '/^"(.*)"$/us',
+            "/^'(.*)'$/us",
+            '/^“\s*(.*?)\s*”$/us',
+            '/^‘\s*(.*?)\s*’$/us',
+        ];
+
+        $changed = true;
+        $count = 0;
+        while ($changed && $count < 5) {
+            $prev = $str;
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $str, $m)) {
+                    $str = trim($m[1]);
+                }
+            }
+            // 양 끝에 남은 특수 괄호 및 따옴표 기호들을 멀티바이트 안전 정규식(/u)으로 완벽 제거
+            $str = preg_replace('/^[\s<〈《«「『\[{\("“‘]+|[\s>〉》»」』\]}\)"”’]+$/u', '', (string)$str);
+            $str = trim((string)$str);
+            $changed = ($prev !== $str);
+            $count++;
+        }
+
+        return $str;
     }
 }

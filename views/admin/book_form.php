@@ -316,9 +316,21 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
             name="category_id"
             id="field_category_id"
             required
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-primary bg-white">
-            <?php foreach ($categories as $cat): ?>
-              <option value="<?= (int)$cat['id'] ?>" <?= (($book['category_id'] ?? 1) == $cat['id']) ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
+            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-primary bg-white font-mono text-xs">
+            <?php foreach ($categories as $cat):
+              $codeLen = strlen($cat['code'] ?? '');
+              $prefix = '';
+              if ($codeLen <= 4) {
+                  $prefix = '■ ';
+              } elseif ($codeLen <= 6) {
+                  $prefix = '　├ ';
+              } else {
+                  $prefix = '　　└ ';
+              }
+            ?>
+              <option value="<?= (int)$cat['id'] ?>" <?= (($book['category_id'] ?? 1) == $cat['id']) ? 'selected' : '' ?>>
+                <?= $prefix . htmlspecialchars($cat['name']) ?> (<?= htmlspecialchars($cat['code']) ?>)
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -598,9 +610,9 @@ function bookFormManager(initialImages) {
 
         const d = json.data;
 
-        // 폼 필드 자동 매핑
-        if (d.title) this.setFieldValue('field_title', d.title);
-        if (d.subtitle) this.setFieldValue('field_subtitle', d.subtitle);
+        // 폼 필드 자동 매핑 (양끝 기호 깔끔 제거)
+        if (d.title) this.setFieldValue('field_title', this.cleanTitleStr(d.title));
+        if (d.subtitle) this.setFieldValue('field_subtitle', this.cleanTitleStr(d.subtitle));
         if (d.author) this.setFieldValue('field_author', d.author);
         if (d.translator) this.setFieldValue('field_translator', d.translator);
         if (d.publisher) this.setFieldValue('field_publisher', d.publisher);
@@ -637,6 +649,28 @@ function bookFormManager(initialImages) {
       } finally {
         this.isParsing = false;
       }
+    },
+
+    cleanTitleStr(str) {
+      if (!str) return '';
+      let s = String(str).trim();
+      const brackets = [
+        [/^<(.+)>$/, 1], [/^〈(.+)〉$/, 1], [/^《(.+)》$/, 1], [/^«(.+)»$/, 1],
+        [/^「(.+)」$/, 1], [/^『(.+)』$/, 1], [/^\[(.+)\]$/, 1], [/^{(.+)}$/, 1],
+        [/^\((.+)\)$/, 1], [/^"(.+)"$/, 1], [/^'(.+)'$/, 1], [/^“(.+)”$/, 1], [/^‘(.+)’$/, 1]
+      ];
+      let changed = true;
+      let count = 0;
+      while (changed && count < 5) {
+        const prev = s;
+        for (const [re] of brackets) {
+          s = s.replace(re, '$1').trim();
+        }
+        s = s.replace(/^[\s<〈《«「『\[{\("“‘]+|[\s>〉》»」』\]}\)"”’]+$/g, '').trim();
+        changed = (prev !== s);
+        count++;
+      }
+      return s;
     },
 
     setFieldValue(elemId, value) {

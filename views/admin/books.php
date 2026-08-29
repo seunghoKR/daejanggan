@@ -43,6 +43,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
             <th class="px-4 py-3 text-right">판매가</th>
             <th class="px-4 py-3 text-center">재고</th>
             <th class="px-4 py-3 text-center">상태</th>
+            <th class="px-4 py-3 text-center">등록일시</th>
             <th class="px-4 py-3 text-center">관리</th>
           </tr>
         </thead>
@@ -62,6 +63,9 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
                 <span class="text-xs px-2 py-0.5 rounded-full font-medium <?= $statusColors[$b['status']] ?? '' ?>">
                   <?= $statusLabels[$b['status']] ?? $b['status'] ?>
                 </span>
+              </td>
+              <td class="px-4 py-3 text-center text-xs text-gray-500 font-mono">
+                <?= !empty($b['created_at']) ? date('Y.m.d H:i', strtotime($b['created_at'])) : '-' ?>
               </td>
               <td class="px-4 py-3 text-center">
                 <a href="/admin/books/<?= (int)$b['id'] ?>/edit" class="text-blue-600 hover:underline text-xs mr-2">수정</a>
