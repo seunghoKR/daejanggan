@@ -75,7 +75,12 @@
     <h1 class="font-semibold text-gray-800 text-base"><?= htmlspecialchars($pageTitle ?? '') ?></h1>
     <div class="ml-auto flex items-center gap-2 text-sm text-gray-500">
       <span class="material-symbols-outlined text-lg">person</span>
-      <span><?= htmlspecialchars(Auth::user()['name'] ?? '') ?></span>
+      <span class="font-medium text-gray-800"><?= htmlspecialchars(Auth::user()['name'] ?? '') ?></span>
+      <?php if ((Auth::user()['id'] ?? 0) === 1 || (Auth::user()['name'] ?? '') === '이승호'): ?>
+        <span class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">개발자</span>
+      <?php else: ?>
+        <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">대표 관리자</span>
+      <?php endif; ?>
       <a href="/logout" class="ml-2 text-xs text-red-500 hover:underline">로그아웃</a>
     </div>
   </header>

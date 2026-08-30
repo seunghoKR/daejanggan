@@ -36,10 +36,16 @@ unset($_SESSION['_flash_success'], $_SESSION['_flash_error']);
         <span class="material-symbols-outlined text-3xl text-secondary-container">person</span>
       </div>
       <div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <h1 class="font-serif text-2xl font-bold"><?= htmlspecialchars($user['name'] ?? '') ?> 님</h1>
           <?php if (!empty($user['nickname']) && $user['nickname'] !== $user['name']): ?>
             <span class="text-xs bg-white/15 px-2.5 py-0.5 rounded-full text-white/80">(<?= htmlspecialchars($user['nickname']) ?>)</span>
+          <?php endif; ?>
+          <?php if (($user['role'] ?? '') === 'ADMIN'): ?>
+            <a href="/admin" class="text-xs bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 rounded-full hover:bg-amber-400/30 transition-colors inline-flex items-center gap-1 font-sans">
+              <span class="material-symbols-outlined text-xs">shield_person</span>
+              <span><?= ($user['username'] === 'admin' || $user['nickname'] === '개발자') ? '개발자 모드' : '쇼핑몰 관리자' ?></span>
+            </a>
           <?php endif; ?>
         </div>
         <p class="text-xs text-white/70 mt-1"><?= htmlspecialchars($user['email'] ?? '') ?> • 가입일 <?= date('Y.m.d', strtotime($user['created_at'])) ?></p>
