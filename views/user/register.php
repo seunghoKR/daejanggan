@@ -157,18 +157,14 @@ unset($_SESSION['_reg_errors'], $_SESSION['_reg_input']);
                value="<?= htmlspecialchars($regInput['telegramId'] ?? '') ?>"
                placeholder="예: @username 또는 123456789"
                class="w-full bg-white border border-outline-variant rounded-lg px-3 py-2 text-xs text-on-surface focus:ring-1 focus:ring-primary outline-none"/>
-        <p class="text-[11px] text-gray-500">입력 시 텔레그램 봇을 통해 도서 발송 및 주문 상태를 실시간으로 전송해 드립니다.</p>
+        <p class="text-[11px] text-gray-500">입력 시 텔레그램 봇(@nuriohkr_bot)을 통해 도서 발송 및 주문 상태를 실시간으로 전송해 드립니다.</p>
       </div>
 
-      <!-- SMS / 이메일 -->
+      <!-- 이메일 소식 알림 -->
       <div class="flex items-center gap-4 pt-2 border-t border-outline-variant/40 text-xs text-gray-600">
         <label class="flex items-center gap-1.5 cursor-pointer">
-          <input type="checkbox" name="notify_sms" value="1" checked class="rounded text-secondary focus:ring-secondary"/>
-          <span>📱 SMS 문자 알림</span>
-        </label>
-        <label class="flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" name="notify_email" value="1" checked class="rounded text-secondary focus:ring-secondary"/>
-          <span>📧 이메일 신간 소식</span>
+          <span>📧 이메일 신간 및 대장간 소식 수신</span>
         </label>
       </div>
     </div>

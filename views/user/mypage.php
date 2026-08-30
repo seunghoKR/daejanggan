@@ -130,20 +130,16 @@ unset($_SESSION['_flash_success'], $_SESSION['_flash_error']);
                      placeholder="예: @my_telegram_id 또는 12345678"
                      class="w-full bg-white border border-sky-300 rounded-lg px-3 py-2 text-xs text-gray-900 focus:ring-1 focus:ring-sky-500 outline-none"/>
               <p class="text-[11px] text-gray-500 mt-1">
-                텔레그램 앱에서 <strong>@DaejangganBot</strong> 검색 후 대화 시작 후 본인 ID를 입력하시면 실시간 주문/배송 메시지를 전송받을 수 있습니다.
+                텔레그램 앱에서 <strong>@nuriohkr_bot</strong> 검색 후 대화 시작 후 본인 ID(또는 Chat ID)를 입력하시면 실시간 주문/배송 메시지를 전송받을 수 있습니다.
               </p>
             </div>
           </div>
 
-          <!-- 3) SMS & 이메일 알림 -->
+          <!-- 3) 이메일 소식 알림 -->
           <div class="flex items-center justify-between p-3 rounded-xl border border-outline-variant/60 bg-surface-container-low text-xs text-gray-700">
             <label class="flex items-center gap-2 cursor-pointer font-medium">
-              <input type="checkbox" name="notify_sms" value="1" <?= ($user['notify_sms'] ?? 1) ? 'checked' : '' ?> class="rounded text-secondary focus:ring-secondary"/>
-              <span>📱 SMS 문자 알림</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="notify_email" value="1" <?= ($user['notify_email'] ?? 1) ? 'checked' : '' ?> class="rounded text-secondary focus:ring-secondary"/>
-              <span>📧 이메일 신간 소식</span>
+              <span>📧 이메일 신간 및 대장간 소식 수신</span>
             </label>
           </div>
 
