@@ -14,7 +14,7 @@ define('DB_PASS', $_ENV['DB_PASS'] ?? '#seungho0409');
 define('APP_ROOT', dirname(__DIR__));
 define('APP_ENV',  $_ENV['APP_ENV'] ?? 'production'); // 'development' or 'production'
 define('APP_DEBUG', APP_ENV === 'development');
-define('APP_VERSION', 'v1.2.0');
+define('APP_VERSION', 'v1.3.0');
 define('APP_NAME', '도서출판 대장간');
 
 define('UPLOAD_PATH',    APP_ROOT . '/uploads');

@@ -431,6 +431,18 @@ final class OrderController
             }
 
             $pdo->commit();
+
+            // 관리자 텔레그램 실시간 주문 알림 발송
+            try {
+                require_once APP_ROOT . '/core/Notifier.php';
+                Notifier::sendOrderAlert([
+                    'order_no'      => $orderData['order_no'],
+                    'orderer_name'  => $orderData['orderer_name'],
+                    'total_amount'  => $orderData['total'],
+                    'pay_method'    => $payMethod,
+                ]);
+            } catch (\Throwable $e) {}
+
             return $orderId;
         } catch (\Throwable $e) {
             $pdo->rollBack();

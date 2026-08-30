@@ -622,11 +622,17 @@ final class AdminController
                     'email','bank_account','address','shipping_fee','free_shipping_min',
                     'point_rate','kakao_map_key',
                     'inicis_mid','inicis_signkey','inicis_keypass','inicis_test',
-                    'inicis_card_use','inicis_bank_use','inicis_vbank_use','inicis_kakaopay'];
+                    'inicis_card_use','inicis_bank_use','inicis_vbank_use','inicis_kakaopay',
+                    'telegram_bot_token','telegram_admin_chat_id',
+                    'telegram_notify_ai','telegram_notify_order','telegram_notify_member','telegram_notify_inquiry',
+                    'kakao_rest_key','kakao_admin_phone'];
 
         foreach ($allowed as $key) {
             $val = isset($_POST[$key]) ? trim((string)$_POST[$key]) : '0';
             if (str_starts_with($key, 'inicis_') && str_ends_with($key, '_use') && !isset($_POST[$key])) {
+                $val = '0';
+            }
+            if (str_starts_with($key, 'telegram_notify_') && !isset($_POST[$key])) {
                 $val = '0';
             }
             Database::execute(
@@ -644,6 +650,54 @@ final class AdminController
 
         $_SESSION['_flash_success'] = '환경설정이 저장되었습니다.';
         header('Location: /admin/settings');
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 텔레그램 알림 테스트 API
+    // ----------------------------------------------------------------
+    public static function testTelegram(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $botToken = trim((string)($input['bot_token'] ?? ''));
+        $chatId   = trim((string)($input['chat_id'] ?? ''));
+
+        require_once APP_ROOT . '/core/Notifier.php';
+
+        $siteName = $GLOBALS['site']['site_name'] ?? '도서출판 대장간';
+        $now = date('Y-m-d H:i:s');
+        $msg = "🎉 <b>[{$siteName}] 텔레그램 알림 연동 테스트 성공!</b>\n\n"
+             . "대장간 쇼핑몰과 텔레그램 알림 봇이 정상적으로 연결되었습니다.\n"
+             . "• 🤖 <b>로컬 AI 연동 장애 실시간 경보</b>\n"
+             . "• 🛒 <b>신규 주문 및 결제 접수 알림</b>\n"
+             . "• 👤 <b>신규 회원가입 알림</b>\n\n"
+             . "⏱️ <i>테스트 시각: {$now}</i>";
+
+        if (!empty($chatId)) {
+            $res = Notifier::sendTelegram($chatId, $msg, $botToken ?: null);
+        } else {
+            $res = Notifier::sendAdminTelegram($msg);
+        }
+
+        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 로컬 AI 실시간 헬스 체크 API
+    // ----------------------------------------------------------------
+    public static function checkAiHealth(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        require_once APP_ROOT . '/core/Notifier.php';
+        $res = Notifier::checkAiHealth();
+
+        echo json_encode($res, JSON_UNESCAPED_UNICODE);
         exit;
     }
 

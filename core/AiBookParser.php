@@ -355,9 +355,15 @@ class AiBookParser
         ]);
 
         $res = curl_exec($ch);
+        $curlErr = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if (!$res) {
+        if (!$res || $httpCode !== 200) {
+            // 로컬 AI 연동 실패 시 관리자/개발자 텔레그램으로 장애 알림 자동 전송 (15분 쿨다운)
+            require_once __DIR__ . '/Notifier.php';
+            $errDetail = $curlErr ?: "HTTP 상태 코드: {$httpCode}";
+            Notifier::sendAiFailureAlert(self::LOCAL_AI_URL, $errDetail, '도서 등록 원고 텍스트 AI 분석 시도 중');
             return [];
         }
 

@@ -131,6 +131,17 @@ final class UserController
 
         Auth::login($username, $password);
         Cart::syncToDb();
+
+        // 관리자 텔레그램 신규 회원가입 알림 발송
+        try {
+            require_once APP_ROOT . '/core/Notifier.php';
+            Notifier::sendMemberAlert([
+                'username' => $username,
+                'name'     => $name,
+                'email'    => $email,
+            ]);
+        } catch (\Throwable $e) {}
+
         header('Location: /mypage?welcome=1');
         exit;
     }

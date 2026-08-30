@@ -1,6 +1,6 @@
 # 📚 도서출판 대장간 신규 온라인 서점 (Daejanggan New Shop)
 
-![Version](https://img.shields.io/badge/version-v1.2.0-blue.svg?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg?style=flat-square)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4.svg?style=flat-square&logo=php&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-10.5%2B-003545.svg?style=flat-square&logo=mariadb&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)
@@ -93,6 +93,19 @@ powershell -ExecutionPolicy Bypass -File .\deploy_ftp.ps1
 ---
 
 ## 📋 버전 변경 이력 (Changelog)
+
+### `v1.3.0` (2026-08-30)
+- **통합 알림 서비스 모듈 (`core/Notifier.php`) 구축**:
+  - 🤖 **로컬 AI 연동 장애 실시간 경보**: LM Studio 서버 무응답/타임아웃 시 관리자/개발자 텔레그램으로 긴급 알림 자동 전송 (15분 쿨다운 보호).
+  - 🛒 **신규 주문 및 결제 접수 텔레그램 실시간 알림**.
+  - 👤 **신규 회원 가입 텔레그램 실시간 알림**.
+  - 💬 **카카오 알림톡 & SMS 비즈메시지 연동 인터페이스 준비**.
+- **관리자 환경설정 (`views/admin/settings.php`) 알림 센터 고도화**:
+  - 텔레그램 봇 토큰 & 관리자 Chat ID 다중 설정 지원.
+  - 🤖 **로컬 AI 연결 상태 실시간 점검** (응답 속도 ms, 모델명 실시간 확인).
+  - ✈️ **텔레그램 원클릭 테스트 알림 발송** 및 즉각 피드백 기능.
+- **도서 등록 화면 (`views/admin/book_form.php`) 실시간 AI 상태 뱃지 장착**:
+  - AI 상태 실시간 감지 및 장애 시 룰 엔진 자동 폴백 안내.
 
 ### `v1.2.0` (2026-08-29)
 - **로컬 AI 스마트 도서 원고 자동 분석기 (`core/AiBookParser.php`) 탑재**:

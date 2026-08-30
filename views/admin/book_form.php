@@ -52,7 +52,11 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
         <div>
           <h3 class="font-bold text-base text-white flex items-center gap-2">
             <span>로컬 AI 스마트 도서 정보 자동 입력</span>
-            <span class="text-[11px] font-semibold bg-blue-500/30 text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-400/30">LM Studio 연동</span>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 transition-colors"
+                  :class="aiOnline === false ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' : 'bg-blue-500/30 text-blue-300 border-blue-400/30'">
+              <span class="w-1.5 h-1.5 rounded-full" :class="aiOnline === false ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'"></span>
+              <span x-text="aiOnline === false ? 'AI 오프라인 (룰 엔진 가동 & 장애알림 연동)' : 'LM Studio 연동'"></span>
+            </span>
           </h3>
           <p class="text-xs text-gray-300">원고 텍스트(제목, 부제, 지은이, 옮긴이, 감수, 출판사, ISBN, [책소개], [목차] 등)를 붙여넣으면 폼에 자동으로 채워집니다.</p>
         </div>
@@ -567,12 +571,27 @@ function bookFormManager(initialImages) {
     isParsing: false,
     parseResult: '',
     showAiHelp: false,
+    aiOnline: null,
     isDragOverZone: false,
     isUploading: false,
     images: Array.isArray(initialImages) ? initialImages : [],
     dragSrcIndex: null,
     dragOverIndex: null,
     bookDesc: `<?= addslashes($book['description'] ?? '') ?>`,
+
+    init() {
+      this.checkAiStatus();
+    },
+
+    async checkAiStatus() {
+      try {
+        const res = await fetch('/admin/notify/check-ai');
+        const data = await res.json();
+        this.aiOnline = data.is_online;
+      } catch (e) {
+        this.aiOnline = false;
+      }
+    },
 
     // 1. .txt 텍스트 파일 불러오기
     loadTextFile(event) {

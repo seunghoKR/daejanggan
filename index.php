@@ -114,6 +114,8 @@ Router::get('/admin/members',         [AdminController::class, 'members']);
 Router::post('/admin/members/:id/points',[AdminController::class, 'adjustPoints']);
 Router::get('/admin/settings',        [AdminController::class, 'settings']);
 Router::post('/admin/settings',       [AdminController::class, 'saveSettings']);
+Router::post('/admin/notify/test-telegram', [AdminController::class, 'testTelegram']);
+Router::get('/admin/notify/check-ai',       [AdminController::class, 'checkAiHealth']);
 
 // ============================================================
 // 요청 디스패치
