@@ -27,6 +27,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
             <option value="TOPIC" selected>주제별/장르별 (TOPIC)</option>
             <option value="BIGONG">도서출판비공 (BIGONG)</option>
             <option value="NICS">NICS (NICS)</option>
+            <option value="MODOO">모두의 책 (MODOO)</option>
             <option value="GENERAL">일반/기타 (GENERAL)</option>
           </select>
         </div>
@@ -120,6 +121,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
             <option value="TOPIC">주제별/장르별 (TOPIC)</option>
             <option value="BIGONG">도서출판비공 (BIGONG)</option>
             <option value="NICS">NICS (NICS)</option>
+            <option value="MODOO">모두의 책 (MODOO)</option>
             <option value="GENERAL">일반/기타 (GENERAL)</option>
           </select>
         </div>

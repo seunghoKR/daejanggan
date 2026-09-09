@@ -454,6 +454,22 @@ tailwind.config = {
         </div>
       </div>
 
+      <!-- 5.5. 모두의 책 (드롭다운: 자본론, 전집) -->
+      <div class="relative nav-item-dropdown">
+        <a href="/category/1070" class="px-4 py-3 text-sm font-medium hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer">
+          모두의 책
+          <span class="material-symbols-outlined text-xs opacity-70">expand_more</span>
+        </a>
+        <div class="nav-dropdown-menu hidden absolute top-full left-0 w-44 bg-white text-gray-800 rounded-b-xl shadow-xl border border-gray-200 py-2 z-50">
+          <a href="/category/107010" class="flex items-center gap-2 px-4 py-2 text-xs hover:bg-gray-100 hover:text-secondary transition-colors">
+            <span class="material-symbols-outlined text-xs text-secondary">arrow_right</span> 자본론
+          </a>
+          <a href="/category/107020" class="flex items-center gap-2 px-4 py-2 text-xs hover:bg-gray-100 hover:text-secondary transition-colors">
+            <span class="material-symbols-outlined text-xs text-secondary">arrow_right</span> 전집
+          </a>
+        </div>
+      </div>
+
       <!-- 6. 커뮤니티 (드롭다운: 회사소개, 출판 문의, 대장간이벤트, 저자 소개, 글 먹는 시간, 자료실) -->
       <div class="relative nav-item-dropdown">
         <a href="/community/company" class="px-4 py-3 text-sm font-medium hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer">
@@ -595,6 +611,18 @@ tailwind.config = {
           <a href="/category/106020" class="py-1 hover:text-secondary">› 교회</a>
           <a href="/category/106030" class="py-1 hover:text-secondary">› 신학</a>
           <a href="/category/106040" class="py-1 hover:text-secondary">› 신앙</a>
+        </div>
+      </div>
+
+      <!-- 5.5. 모두의 책 아코디언 -->
+      <div class="pt-2">
+        <button @click="openSec = (openSec === 'modoo' ? '' : 'modoo')" class="w-full py-2 text-sm font-semibold text-primary flex items-center justify-between">
+          <span>✨ 모두의 책</span>
+          <span class="material-symbols-outlined text-sm text-on-surface-variant" x-text="openSec === 'modoo' ? 'expand_less' : 'expand_more'"></span>
+        </button>
+        <div x-show="openSec === 'modoo'" class="pl-4 pb-2 flex flex-col gap-1.5 text-xs text-on-surface-variant">
+          <a href="/category/107010" class="py-1 hover:text-secondary">› 자본론</a>
+          <a href="/category/107020" class="py-1 hover:text-secondary">› 전집</a>
         </div>
       </div>
 
