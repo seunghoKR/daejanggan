@@ -1,6 +1,6 @@
 # 📚 도서출판 대장간 신규 온라인 서점 (Daejanggan New Shop)
 
-![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg?style=flat-square)
+![Version](https://img.shields.io/badge/version-v1.4.0-blue.svg?style=flat-square)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4.svg?style=flat-square&logo=php&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-10.5%2B-003545.svg?style=flat-square&logo=mariadb&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)
@@ -93,6 +93,20 @@ powershell -ExecutionPolicy Bypass -File .\deploy_ftp.ps1
 ---
 
 ## 📋 버전 변경 이력 (Changelog)
+
+### `v1.4.0` (2026-09-09)
+- **출판의뢰 시스템 및 관리자 접수 센터 구축**:
+  - 사용자 맞춤형 출판의뢰 안내 및 접수 폼 (`/community/inquiry`), 로봇 방지 캡챠(`Captcha.php`) 연동.
+  - 관리자 대시보드 출판의뢰 문의 목록 (`/admin/inquiries`) 및 상세 뷰어 (`/admin/inquiry/detail/{id}`) 제공, 미확인 문의 건수 실시간 배지 표시.
+  - 신규 출판의뢰 접수 시 관리자 텔레그램 실시간 알림 연동.
+- **회사소개 비주얼 위지윅(WYSIWYG) 에디터 탑재**:
+  - 관리자 회사소개 편집 (`/admin/company`) 화면에 Quill.js 위지윅 에디터 적용 (비주얼/HTML 소스 실시간 모드 전환).
+- **게시판 운영 관리 시스템 통합**:
+  - 대장간 이벤트, 글먹는시간, 자료실, 공지사항 등 전체 게시판 관리자 전용 등록/수정/삭제 (`/admin/board/{type}`) 기능 구축.
+  - 게시글 수정/삭제 버튼을 직관적인 모던 아이콘으로 개편.
+- **네비게이션 및 메뉴 구조 고도화**:
+  - PC GNB 및 모바일 드로어 메뉴에 `모두의 책 (자본론 / 전집)` 및 커뮤니티 하위 `공지사항` 연동.
+  - 전역 버전 관리 시스템을 `v1.4.0`으로 갱신.
 
 ### `v1.3.0` (2026-08-30)
 - **통합 알림 서비스 모듈 (`core/Notifier.php`) 구축**:

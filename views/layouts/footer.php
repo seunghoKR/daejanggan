@@ -78,7 +78,7 @@ $site = $GLOBALS['site'] ?? [];
       </p>
       <p class="text-xs text-on-surface-variant mt-2 flex items-center justify-between flex-wrap gap-2">
         <span>© <?= date('Y') ?> Daejanggan Publishing House. All rights reserved.</span>
-        <span class="text-[11px] text-on-surface-variant/60 font-mono"><?= defined('APP_VERSION') ? APP_VERSION : 'v1.2.0' ?></span>
+        <span class="text-[11px] text-on-surface-variant/60 font-mono"><?= defined('APP_VERSION') ? APP_VERSION : 'v1.4.0' ?></span>
       </p>
     </div>
   </div>

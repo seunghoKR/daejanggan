@@ -30,7 +30,7 @@
       <span class="material-symbols-outlined text-lg">storefront</span>
       <span x-show="sidebarOpen" class="font-bold text-sm">대장간 관리자</span>
     </div>
-    <span x-show="sidebarOpen" class="text-[10px] bg-white/15 text-white/80 px-1.5 py-0.5 rounded-full font-mono"><?= defined('APP_VERSION') ? APP_VERSION : 'v1.2.0' ?></span>
+    <span x-show="sidebarOpen" class="text-[10px] bg-white/15 text-white/80 px-1.5 py-0.5 rounded-full font-mono"><?= defined('APP_VERSION') ? APP_VERSION : 'v1.4.0' ?></span>
   </div>
 
   <nav class="flex-1 py-4 flex flex-col gap-1 px-2 overflow-y-auto admin-sidebar">
