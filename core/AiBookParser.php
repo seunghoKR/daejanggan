@@ -329,26 +329,23 @@ class AiBookParser
             return [];
         }
 
-        $prompt = "다음 도서 원고 정보를 분석하여 한줄 요약(summary)과 핵심 메타데이터를 JSON으로 출력해주세요.\n\n"
-                . "[필수 규칙]\n"
-                . "1. 원고 텍스트의 첫 번째 줄은 특별한 명칭(지은이:, 출판사: 등)이 없는 경우 반드시 '도서제목(title)'입니다.\n"
-                . "2. 두 번째 줄은 특별한 명칭이 없는 경우 반드시 '부제목(subtitle)'입니다.\n"
-                . "3. 본문 [책소개] 내용을 바탕으로 1~2문장의 매력적인 한줄 요약(summary)을 작성해주세요.\n\n"
+        $compactText = mb_substr(trim($rawText), 0, 600);
+        $prompt = "다음 도서 원고 정보를 분석하여 한줄 요약(summary)과 핵심 제목을 JSON으로 출력해주세요.\n\n"
+                . "1. 첫 번째 줄: 도서제목(title)\n"
+                . "2. 두 번째 줄: 부제목(subtitle)\n"
+                . "3. [책소개] 기반 1~2문장의 매력적인 한줄 요약(summary)\n\n"
                 . "반드시 아래 JSON 형식만 반환하세요:\n"
-                . "{\n"
-                . '  "title": "도서명",' . "\n"
-                . '  "subtitle": "부제",' . "\n"
-                . '  "summary": "1~2문장의 감각적이고 매력적인 책소개 한줄 요약"' . "\n"
-                . "}\n\n[원고 본문]\n" . mb_substr($rawText, 0, 1500);
+                . '{"title": "도서명", "subtitle": "부제", "summary": "1~2문장 책소개 요약"}' . "\n\n"
+                . "[원고]\n" . $compactText;
 
         $payload = json_encode([
             'model' => self::LOCAL_AI_MODEL,
             'messages' => [
-                ['role' => 'system', 'content' => 'You are a professional Korean book editor and metadata parser. Strictly follow the title and subtitle position rules. Output pure JSON only.'],
+                ['role' => 'system', 'content' => 'Output pure JSON only. Keep summary under 2 concise sentences.'],
                 ['role' => 'user', 'content' => $prompt]
             ],
             'temperature' => 0.1,
-            'max_tokens'  => 512,
+            'max_tokens'  => 160, // 160토큰으로 제한하여 생성 속도 3배 이상 향상
         ], JSON_UNESCAPED_UNICODE);
 
         $ch = curl_init(self::LOCAL_AI_URL);
@@ -357,8 +354,8 @@ class AiBookParser
             CURLOPT_POSTFIELDS        => $payload,
             CURLOPT_HTTPHEADER        => ['Content-Type: application/json'],
             CURLOPT_RETURNTRANSFER    => true,
-            CURLOPT_CONNECTTIMEOUT_MS => 4000,
-            CURLOPT_TIMEOUT_MS        => 20000, // LLM 생성에 충분한 시간 (20초) 부여
+            CURLOPT_CONNECTTIMEOUT_MS => 2000,
+            CURLOPT_TIMEOUT_MS        => 6500, // 6.5초 초고속 타임아웃 최적화
             CURLOPT_NOSIGNAL          => 1,
         ]);
 

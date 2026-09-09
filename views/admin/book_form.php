@@ -132,7 +132,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
-              <span>로컬 AI가 분석 중입니다...</span>
+              <span>AI 쾌속 분석 중... (<span x-text="parseSeconds + '초'"></span>)</span>
             </span>
           </template>
         </button>
@@ -577,6 +577,10 @@ function bookFormManager(initialImages) {
     images: Array.isArray(initialImages) ? initialImages : [],
     dragSrcIndex: null,
     dragOverIndex: null,
+    rawManuscript: '',
+    isParsing: false,
+    parseSeconds: 0,
+    parseResult: '',
     bookDesc: `<?= addslashes($book['description'] ?? '') ?>`,
 
     init() {
@@ -612,7 +616,9 @@ function bookFormManager(initialImages) {
       }
 
       this.isParsing = true;
+      this.parseSeconds = 0;
       this.parseResult = '';
+      const timer = setInterval(() => { this.parseSeconds++; }, 1000);
 
       try {
         const res = await fetch('/admin/books/ai-parse', {
@@ -666,6 +672,7 @@ function bookFormManager(initialImages) {
         console.error(err);
         alert('AI 분석 중 통신 오류가 발생했습니다.');
       } finally {
+        clearInterval(timer);
         this.isParsing = false;
       }
     },
