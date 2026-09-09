@@ -182,6 +182,39 @@ class Notifier
     }
 
     /**
+     * ✉️ 신규 출판 의뢰 문의 접수 알림
+     */
+    public static function sendInquiryAlert(array $inquiry): bool
+    {
+        $notifyEnabled = self::getSetting('telegram_notify_inquiry', '1');
+        if ($notifyEnabled !== '1') return false;
+
+        $name     = $inquiry['name'] ?? '익명';
+        $phone    = $inquiry['phone'] ?? '-';
+        $email    = $inquiry['email'] ?? '-';
+        $bookType = $inquiry['book_type'] ?? '단행본';
+        $title    = $inquiry['title'] ?? '(가제 미기재)';
+        $pages    = !empty($inquiry['page_count']) ? $inquiry['page_count'] : '미기재';
+        $hasFile  = !empty($inquiry['file_path']) ? '📎 첨부파일 있음' : '❌ 파일 없음';
+        $siteName = self::getSetting('site_name', '도서출판 대장간');
+        $now      = date('Y-m-d H:i:s');
+
+        $msg = "📬 <b>[{$siteName}] 신규 출판의뢰 문의 접수</b>\n\n"
+             . "👤 <b>의뢰자:</b> {$name}\n"
+             . "📞 <b>연락처:</b> {$phone}\n"
+             . "📧 <b>이메일:</b> {$email}\n"
+             . "📚 <b>출판형태:</b> {$bookType}\n"
+             . "📖 <b>도서명(가제):</b> {$title}\n"
+             . "📄 <b>예상원고량:</b> {$pages}\n"
+             . "📁 <b>첨부상태:</b> {$hasFile}\n"
+             . "⏱️ <b>접수일시:</b> {$now}\n\n"
+             . "👉 <a href=\"http://ndaejanggan.iwinv.net/admin/inquiries\">관리자 출판문의 대시보드 바로가기</a>";
+
+        $res = self::sendAdminTelegram($msg);
+        return $res['success'] ?? false;
+    }
+
+    /**
      * 🤖 로컬 AI 서버 실시간 헬스 체크
      * @param string|null $url 엔드포인트 URL (기본값: http://49.170.204.109:1234/v1/models)
      * @return array ['is_online' => bool, 'latency_ms' => int, 'model' => string, 'error' => string]

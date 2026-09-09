@@ -35,16 +35,30 @@
 
   <nav class="flex-1 py-4 flex flex-col gap-1 px-2 overflow-y-auto admin-sidebar">
     <?php
-    $menus = [
+    $inquiryPendingCount = 0;
+    try {
+      $inquiryPendingCount = (int)(Database::fetchOne("SELECT COUNT(*) AS cnt FROM publication_inquiries WHERE status = 'PENDING'")['cnt'] ?? 0);
+    } catch (\Throwable $e) {}
+
+    $mainMenus = [
       ['dashboard',       '/admin',            'dashboard',    '대시보드'],
       ['books',           '/admin/books',       'menu_book',    '도서 관리'],
       ['categories',      '/admin/categories',  'category',     '도서분류 관리'],
       ['banners',         '/admin/banners',     'view_carousel','배너/기획전 관리'],
       ['orders',          '/admin/orders',      'receipt_long', '주문 관리'],
       ['members',         '/admin/members',     'group',        '회원 관리'],
-      ['settings',        '/admin/settings',    'settings',     '환경설정'],
     ];
-    foreach ($menus as [$key, $url, $icon, $label]):
+
+    $boardMenus = [
+      ['board_notice',    '/admin/board/notice',  'campaign',     '공지사항 관리',   0],
+      ['board_event',     '/admin/board/event',   'celebration',  '대장간이벤트',     0],
+      ['board_gallery',   '/admin/board/gallery', 'auto_stories', '글 먹는 시간',    0],
+      ['board_archive',   '/admin/board/archive', 'folder_open',  '자료실 관리',     0],
+      ['inquiries',       '/admin/inquiries',     'mail',         '출판 의뢰 문의',  $inquiryPendingCount],
+      ['company',         '/admin/company',       'business',     '회사소개 편집',   0],
+    ];
+
+    foreach ($mainMenus as [$key, $url, $icon, $label]):
       $isActive = ($activeMenu ?? '') === $key;
     ?>
       <a href="<?= $url ?>"
@@ -54,6 +68,41 @@
         <span x-show="sidebarOpen"><?= $label ?></span>
       </a>
     <?php endforeach; ?>
+
+    <!-- 게시판 & 콘텐츠 섹션 구분선 -->
+    <div class="pt-3 pb-1 px-3" x-show="sidebarOpen">
+      <span class="text-[10px] font-bold text-white/40 uppercase tracking-wider">게시판 &amp; 콘텐츠</span>
+    </div>
+
+    <?php
+    foreach ($boardMenus as [$key, $url, $icon, $label, $badge]):
+      $isActive = ($activeMenu ?? '') === $key;
+    ?>
+      <a href="<?= $url ?>"
+         class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-colors
+                <?= $isActive ? 'bg-white/15 text-white font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="material-symbols-outlined text-lg"><?= $icon ?></span>
+          <span x-show="sidebarOpen" class="truncate"><?= $label ?></span>
+        </div>
+        <?php if ($badge > 0): ?>
+          <span x-show="sidebarOpen" class="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full shrink-0">
+            <?= $badge ?>
+          </span>
+        <?php endif; ?>
+      </a>
+    <?php endforeach; ?>
+
+    <!-- 환경설정 -->
+    <div class="pt-2 border-t border-white/10 mt-2">
+      <?php $isSettingsActive = ($activeMenu ?? '') === 'settings'; ?>
+      <a href="/admin/settings"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <?= $isSettingsActive ? 'bg-white/15 text-white font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
+        <span class="material-symbols-outlined text-xl">settings</span>
+        <span x-show="sidebarOpen">환경설정</span>
+      </a>
+    </div>
   </nav>
 
   <div class="px-4 py-3 border-t border-white/10">

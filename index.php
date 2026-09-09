@@ -82,6 +82,9 @@ Router::get('/mypage/wishlist',       [UserController::class, 'wishlist']);
 Router::post('/mypage/wishlist/add',  [UserController::class, 'addWishlist']);
 
 // --- 게시판 ---
+Router::get('/community/company',     [HomeController::class, 'company']);
+Router::get('/community/inquiry',     [HomeController::class, 'inquiry']);
+Router::post('/community/inquiry',    [HomeController::class, 'inquirySubmit']);
 Router::get('/community/:type',       [HomeController::class, 'board']);
 Router::get('/community/:type/:id',   [HomeController::class, 'boardDetail']);
 
@@ -112,6 +115,21 @@ Router::post('/admin/banners/:id/delete',[AdminController::class, 'bannerDelete'
 Router::post('/admin/banners/:id/toggle',[AdminController::class, 'bannerToggle']);
 Router::get('/admin/members',         [AdminController::class, 'members']);
 Router::post('/admin/members/:id/points',[AdminController::class, 'adjustPoints']);
+
+// --- 관리자: 게시판 & 콘텐츠 관리 ---
+Router::get('/admin/company',               [AdminController::class, 'company']);
+Router::post('/admin/company',              [AdminController::class, 'saveCompany']);
+Router::get('/admin/inquiries',             [AdminController::class, 'inquiries']);
+Router::get('/admin/inquiries/:id',         [AdminController::class, 'inquiryDetail']);
+Router::post('/admin/inquiries/:id/update', [AdminController::class, 'inquiryUpdate']);
+Router::post('/admin/inquiries/:id/delete', [AdminController::class, 'inquiryDelete']);
+Router::get('/admin/board/:type',           [AdminController::class, 'boardList']);
+Router::get('/admin/board/:type/create',    [AdminController::class, 'boardCreate']);
+Router::post('/admin/board/:type/create',   [AdminController::class, 'boardStore']);
+Router::get('/admin/board/:type/:id/edit',  [AdminController::class, 'boardEdit']);
+Router::post('/admin/board/:type/:id/edit', [AdminController::class, 'boardUpdate']);
+Router::post('/admin/board/:type/:id/delete',[AdminController::class, 'boardDelete']);
+
 Router::get('/admin/settings',        [AdminController::class, 'settings']);
 Router::post('/admin/settings',       [AdminController::class, 'saveSettings']);
 Router::post('/admin/notify/test-telegram', [AdminController::class, 'testTelegram']);

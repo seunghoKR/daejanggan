@@ -477,6 +477,9 @@ tailwind.config = {
           <span class="material-symbols-outlined text-xs opacity-70">expand_more</span>
         </a>
         <div class="nav-dropdown-menu hidden absolute top-full left-0 w-48 bg-white text-gray-800 rounded-b-xl shadow-xl border border-gray-200 py-2 z-50">
+          <a href="/community/notice" class="flex items-center gap-2 px-4 py-2 text-xs hover:bg-gray-100 hover:text-secondary transition-colors">
+            <span class="text-[10px] text-secondary font-bold">▶</span> 공지사항
+          </a>
           <a href="/community/company" class="flex items-center gap-2 px-4 py-2 text-xs hover:bg-gray-100 hover:text-secondary transition-colors">
             <span class="text-[10px] text-secondary font-bold">▶</span> 회사소개
           </a>
@@ -623,6 +626,23 @@ tailwind.config = {
         <div x-show="openSec === 'modoo'" class="pl-4 pb-2 flex flex-col gap-1.5 text-xs text-on-surface-variant">
           <a href="/category/107010" class="py-1 hover:text-secondary">› 자본론</a>
           <a href="/category/107020" class="py-1 hover:text-secondary">› 전집</a>
+        </div>
+      </div>
+
+      <!-- 5.6. 커뮤니티 아코디언 -->
+      <div class="pt-2">
+        <button @click="openSec = (openSec === 'community' ? '' : 'community')" class="w-full py-2 text-sm font-semibold text-primary flex items-center justify-between">
+          <span>💬 커뮤니티</span>
+          <span class="material-symbols-outlined text-sm text-on-surface-variant" x-text="openSec === 'community' ? 'expand_less' : 'expand_more'"></span>
+        </button>
+        <div x-show="openSec === 'community'" class="pl-4 pb-2 grid grid-cols-2 gap-1.5 text-xs text-on-surface-variant">
+          <a href="/community/notice" class="py-1 hover:text-secondary">› 공지사항</a>
+          <a href="/community/company" class="py-1 hover:text-secondary">› 회사소개</a>
+          <a href="/community/inquiry" class="py-1 hover:text-secondary">› 출판 문의</a>
+          <a href="/community/event" class="py-1 hover:text-secondary">› 대장간이벤트</a>
+          <a href="/authors" class="py-1 hover:text-secondary">› 저자 소개</a>
+          <a href="/community/gallery" class="py-1 hover:text-secondary">› 글 먹는 시간</a>
+          <a href="/community/archive" class="py-1 hover:text-secondary">› 자료실</a>
         </div>
       </div>
 

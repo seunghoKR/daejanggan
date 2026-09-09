@@ -86,6 +86,47 @@ final class FileUploader
     }
 
     /**
+     * 일반 문서 및 첨부파일 업로드 (이미지 검사 없이 확장자 및 크기 검사)
+     *
+     * @param  array  $file   $_FILES['field'] 형태
+     * @return string         업로드된 파일의 웹 URL 경로
+     * @throws RuntimeException
+     */
+    public function uploadDocument(array $file): string
+    {
+        if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+            throw new RuntimeException('파일 업로드 오류: ' . ($file['error'] ?? 'unknown'));
+        }
+
+        if ($file['size'] > $this->maxBytes) {
+            throw new RuntimeException(sprintf(
+                '파일 크기가 너무 큽니다 (최대 %dMB).',
+                $this->maxBytes / 1024 / 1024
+            ));
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!empty($this->allowedExts) && !in_array($ext, $this->allowedExts, true)) {
+            throw new RuntimeException('허용되지 않는 파일 형식입니다. (.' . implode(', .', $this->allowedExts) . ')');
+        }
+
+        // 위험 확장자 차단
+        $blockedExts = ['php', 'php3', 'php4', 'php5', 'phtml', 'phar', 'inc', 'sh', 'bat', 'cmd', 'exe', 'cgi', 'pl', 'asp', 'aspx', 'jsp'];
+        if (in_array($ext, $blockedExts, true)) {
+            throw new RuntimeException('보안상 업로드할 수 없는 파일 확장자입니다.');
+        }
+
+        $newName = $this->generateFilename($ext);
+        $dest    = $this->uploadPath . '/' . $newName;
+
+        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            throw new RuntimeException('파일 저장에 실패했습니다.');
+        }
+
+        return $this->uploadUrl . '/' . $newName;
+    }
+
+    /**
      * 비율 유지 스마트 리사이징
      */
     private function resizeAndSave(string $srcPath, string $destPath, array $info, string $ext): bool

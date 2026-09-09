@@ -72,15 +72,22 @@ include APP_ROOT . '/views/layouts/header.php';
         <?php if (empty($posts)): ?>
           <div class="p-12 text-center text-xs text-on-surface-variant">등록된 게시물이 없습니다.</div>
         <?php else: ?>
-          <?php foreach ($posts as $post): ?>
+          <?php foreach ($posts as $post):
+            $isNotice = !empty($post['is_notice']);
+          ?>
             <a href="/community/<?= htmlspecialchars($type) ?>/<?= (int)$post['id'] ?>"
-               class="p-4 md:p-5 flex items-center justify-between hover:bg-surface-container-low transition-colors block group">
+               class="p-4 md:p-5 flex items-center justify-between hover:bg-surface-container-low transition-colors block group <?= $isNotice ? 'bg-amber-50/40' : '' ?>">
               <div class="flex-1 min-w-0 pr-4">
-                <h3 class="font-medium text-sm md:text-base text-primary group-hover:text-secondary transition-colors line-clamp-1">
-                  <?= htmlspecialchars($post['title']) ?>
-                </h3>
-                <div class="flex items-center gap-3 text-xs text-on-surface-variant mt-1">
-                  <span><?= htmlspecialchars($post['author_name'] ?? '관리자') ?></span>
+                <div class="flex items-center gap-2 mb-1">
+                  <?php if ($isNotice): ?>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px] shrink-0">공지</span>
+                  <?php endif; ?>
+                  <h3 class="font-medium text-sm md:text-base text-primary group-hover:text-secondary transition-colors line-clamp-1 <?= $isNotice ? 'font-bold' : '' ?>">
+                    <?= htmlspecialchars($post['title']) ?>
+                  </h3>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-on-surface-variant">
+                  <span><?= htmlspecialchars($post['author_name'] ?? '도서출판 대장간') ?></span>
                   <span>•</span>
                   <span><?= date('Y.m.d', strtotime($post['created_at'])) ?></span>
                   <span>•</span>

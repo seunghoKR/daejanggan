@@ -79,7 +79,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
         <!-- 알림 수신 항목 토글 -->
         <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
           <p class="text-xs font-bold text-gray-700 mb-3">📢 실시간 텔레그램 자동 발송 항목</p>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer bg-white p-2.5 rounded-lg border border-gray-200 hover:border-blue-300">
               <input type="checkbox" name="telegram_notify_ai" value="1" <?= (($settings['telegram_notify_ai']['key_value'] ?? '1') === '1') ? 'checked' : '' ?> class="rounded text-blue-600"/>
               <div>
@@ -101,6 +101,14 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
               <div>
                 <span class="font-semibold block text-emerald-600">👤 신규 회원 가입</span>
                 <span class="text-[10px] text-gray-400">신규 회원 등록 시 알림</span>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer bg-white p-2.5 rounded-lg border border-gray-200 hover:border-blue-300">
+              <input type="checkbox" name="telegram_notify_inquiry" value="1" <?= (($settings['telegram_notify_inquiry']['key_value'] ?? '1') === '1') ? 'checked' : '' ?> class="rounded text-blue-600"/>
+              <div>
+                <span class="font-semibold block text-purple-600">✉️ 신규 출판의뢰 문의</span>
+                <span class="text-[10px] text-gray-400">출판문의 접수 시 즉시 알림</span>
               </div>
             </label>
           </div>

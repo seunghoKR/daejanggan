@@ -942,4 +942,266 @@ final class AdminController
 
         include APP_ROOT . '/views/admin/banner_archive.php';
     }
+
+    // ----------------------------------------------------------------
+    // 🏢 회사소개 관리
+    // ----------------------------------------------------------------
+    public static function company(array $params = []): void
+    {
+        self::boot();
+        $companyIntro = Database::fetchOne("SELECT key_value FROM site_settings WHERE key_name = 'company_intro_html'")['key_value'] ?? '';
+        include APP_ROOT . '/views/admin/company.php';
+    }
+
+    public static function saveCompany(array $params = []): void
+    {
+        self::boot();
+        $html = trim($_POST['company_intro_html'] ?? '');
+
+        Database::execute(
+            "INSERT INTO site_settings (key_name, key_value, description) VALUES ('company_intro_html', ?, '회사소개 HTML')
+             ON DUPLICATE KEY UPDATE key_value = VALUES(key_value)",
+            [$html]
+        );
+
+        $GLOBALS['site']['company_intro_html'] = $html;
+        $_SESSION['_flash_success'] = '회사소개 내용이 성공적으로 저장되었습니다.';
+        header('Location: /admin/company');
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // ✉️ 출판의뢰 문의 관리
+    // ----------------------------------------------------------------
+    public static function inquiries(array $params = []): void
+    {
+        self::boot();
+        $page    = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 15;
+        $offset  = ($page - 1) * $perPage;
+        $status  = trim($_GET['status'] ?? '');
+
+        $where = ['1=1'];
+        $bind  = [];
+        if (!empty($status)) {
+            $where[] = 'status = ?';
+            $bind[]  = $status;
+        }
+
+        $whereStr = implode(' AND ', $where);
+        $total = (int)(Database::fetchOne("SELECT COUNT(*) AS cnt FROM publication_inquiries WHERE $whereStr", $bind)['cnt'] ?? 0);
+        $totalPages = (int)ceil($total / $perPage);
+
+        $inquiries = Database::fetchAll(
+            "SELECT * FROM publication_inquiries WHERE $whereStr ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            array_merge($bind, [$perPage, $offset])
+        );
+
+        include APP_ROOT . '/views/admin/inquiries.php';
+    }
+
+    public static function inquiryDetail(array $params = []): void
+    {
+        self::boot();
+        $id = (int)($params['id'] ?? 0);
+        $inquiry = Database::fetchOne("SELECT * FROM publication_inquiries WHERE id = ?", [$id]);
+        if (!$inquiry) {
+            $_SESSION['_flash_error'] = '해당 출판 문의를 찾을 수 없습니다.';
+            header('Location: /admin/inquiries');
+            exit;
+        }
+        include APP_ROOT . '/views/admin/inquiry_detail.php';
+    }
+
+    public static function inquiryUpdate(array $params = []): void
+    {
+        self::boot();
+        $id        = (int)($params['id'] ?? 0);
+        $status    = trim($_POST['status'] ?? 'PENDING');
+        $adminMemo = trim($_POST['admin_memo'] ?? '');
+
+        Database::execute(
+            "UPDATE publication_inquiries SET status = ?, admin_memo = ? WHERE id = ?",
+            [$status, $adminMemo, $id]
+        );
+
+        $_SESSION['_flash_success'] = '문의 상태 및 메모가 저장되었습니다.';
+        header('Location: /admin/inquiries/' . $id);
+        exit;
+    }
+
+    public static function inquiryDelete(array $params = []): void
+    {
+        self::boot();
+        $id      = (int)($params['id'] ?? 0);
+        $inquiry = Database::fetchOne("SELECT file_path FROM publication_inquiries WHERE id = ?", [$id]);
+        if ($inquiry && !empty($inquiry['file_path'])) {
+            FileUploader::delete($inquiry['file_path']);
+        }
+        Database::execute("DELETE FROM publication_inquiries WHERE id = ?", [$id]);
+
+        $_SESSION['_flash_success'] = '출판 문의가 삭제되었습니다.';
+        header('Location: /admin/inquiries');
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 📋 커뮤니티 게시판 관리 (notice, event, gallery, archive, press)
+    // ----------------------------------------------------------------
+    public static function boardList(array $params = []): void
+    {
+        self::boot();
+        $type = $params['type'] ?? 'notice';
+        $page    = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 20;
+        $offset  = ($page - 1) * $perPage;
+
+        $total = (int)(Database::fetchOne("SELECT COUNT(*) AS cnt FROM posts WHERE type = ?", [$type])['cnt'] ?? 0);
+        $totalPages = (int)ceil($total / $perPage);
+
+        $posts = Database::fetchAll(
+            "SELECT * FROM posts WHERE type = ? ORDER BY is_notice DESC, created_at DESC, id DESC LIMIT ? OFFSET ?",
+            [$type, $perPage, $offset]
+        );
+
+        include APP_ROOT . '/views/admin/board_list.php';
+    }
+
+    public static function boardCreate(array $params = []): void
+    {
+        self::boot();
+        $type = $params['type'] ?? 'notice';
+        $post = [
+            'id'          => 0,
+            'type'        => $type,
+            'title'       => '',
+            'content'     => '',
+            'author_name' => Auth::user()['name'] ?? '도서출판 대장간',
+            'is_notice'   => 0,
+            'is_secret'   => 0,
+            'file_path'   => '',
+        ];
+        include APP_ROOT . '/views/admin/board_form.php';
+    }
+
+    public static function boardStore(array $params = []): void
+    {
+        self::boot();
+        $type       = $params['type'] ?? 'notice';
+        $title      = trim($_POST['title'] ?? '');
+        $content    = trim($_POST['content'] ?? '');
+        $authorName = trim($_POST['author_name'] ?? (Auth::user()['name'] ?? '도서출판 대장간'));
+        $isNotice   = isset($_POST['is_notice']) ? 1 : 0;
+        $isSecret   = isset($_POST['is_secret']) ? 1 : 0;
+        $userId     = Auth::user()['id'] ?? null;
+
+        if (empty($title) || empty($content)) {
+            $_SESSION['_flash_error'] = '제목과 내용을 모두 입력해 주세요.';
+            header("Location: /admin/board/{$type}/create");
+            exit;
+        }
+
+        $filePath = null;
+        if (!empty($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $subdir = ($type === 'gallery') ? 'gallery' : 'board';
+                $uploader = new FileUploader($subdir, ['jpg','jpeg','png','gif','webp','pdf','hwp','hwpx','docx','zip'], 30 * 1024 * 1024);
+                $filePath = ($type === 'gallery') ? $uploader->upload($_FILES['attachment']) : $uploader->uploadDocument($_FILES['attachment']);
+            } catch (\Throwable $e) {
+                $_SESSION['_flash_error'] = '파일 업로드 실패: ' . $e->getMessage();
+                header("Location: /admin/board/{$type}/create");
+                exit;
+            }
+        }
+
+        Database::execute(
+            "INSERT INTO posts (type, title, content, author_name, user_id, is_notice, is_secret, file_path, view_count)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)",
+            [$type, $title, $content, $authorName, $userId, $isNotice, $isSecret, $filePath]
+        );
+
+        $_SESSION['_flash_success'] = '게시글이 성공적으로 등록되었습니다.';
+        header("Location: /admin/board/{$type}");
+        exit;
+    }
+
+    public static function boardEdit(array $params = []): void
+    {
+        self::boot();
+        $type = $params['type'] ?? 'notice';
+        $id   = (int)($params['id'] ?? 0);
+
+        $post = Database::fetchOne("SELECT * FROM posts WHERE id = ? AND type = ?", [$id, $type]);
+        if (!$post) {
+            $_SESSION['_flash_error'] = '게시글을 찾을 수 없습니다.';
+            header("Location: /admin/board/{$type}");
+            exit;
+        }
+
+        include APP_ROOT . '/views/admin/board_form.php';
+    }
+
+    public static function boardUpdate(array $params = []): void
+    {
+        self::boot();
+        $type       = $params['type'] ?? 'notice';
+        $id         = (int)($params['id'] ?? 0);
+        $title      = trim($_POST['title'] ?? '');
+        $content    = trim($_POST['content'] ?? '');
+        $authorName = trim($_POST['author_name'] ?? '도서출판 대장간');
+        $isNotice   = isset($_POST['is_notice']) ? 1 : 0;
+        $isSecret   = isset($_POST['is_secret']) ? 1 : 0;
+
+        $post = Database::fetchOne("SELECT * FROM posts WHERE id = ? AND type = ?", [$id, $type]);
+        if (!$post) {
+            $_SESSION['_flash_error'] = '게시글을 찾을 수 없습니다.';
+            header("Location: /admin/board/{$type}");
+            exit;
+        }
+
+        $filePath = $post['file_path'];
+        if (!empty($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $subdir = ($type === 'gallery') ? 'gallery' : 'board';
+                $uploader = new FileUploader($subdir, ['jpg','jpeg','png','gif','webp','pdf','hwp','hwpx','docx','zip'], 30 * 1024 * 1024);
+                $newPath = ($type === 'gallery') ? $uploader->upload($_FILES['attachment']) : $uploader->uploadDocument($_FILES['attachment']);
+                if ($filePath && $filePath !== $newPath) {
+                    FileUploader::delete($filePath);
+                }
+                $filePath = $newPath;
+            } catch (\Throwable $e) {
+                $_SESSION['_flash_error'] = '파일 업로드 실패: ' . $e->getMessage();
+                header("Location: /admin/board/{$type}/{$id}/edit");
+                exit;
+            }
+        }
+
+        Database::execute(
+            "UPDATE posts SET title = ?, content = ?, author_name = ?, is_notice = ?, is_secret = ?, file_path = ?
+             WHERE id = ? AND type = ?",
+            [$title, $content, $authorName, $isNotice, $isSecret, $filePath, $id, $type]
+        );
+
+        $_SESSION['_flash_success'] = '게시글이 성공적으로 수정되었습니다.';
+        header("Location: /admin/board/{$type}");
+        exit;
+    }
+
+    public static function boardDelete(array $params = []): void
+    {
+        self::boot();
+        $type = $params['type'] ?? 'notice';
+        $id   = (int)($params['id'] ?? 0);
+
+        $post = Database::fetchOne("SELECT file_path FROM posts WHERE id = ? AND type = ?", [$id, $type]);
+        if ($post && !empty($post['file_path'])) {
+            FileUploader::delete($post['file_path']);
+        }
+
+        Database::execute("DELETE FROM posts WHERE id = ? AND type = ?", [$id, $type]);
+
+        $_SESSION['_flash_success'] = '게시글이 삭제되었습니다.';
+        header("Location: /admin/board/{$type}");
+        exit;
+    }
 }
