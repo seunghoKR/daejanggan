@@ -357,8 +357,8 @@ class AiBookParser
             CURLOPT_POSTFIELDS        => $payload,
             CURLOPT_HTTPHEADER        => ['Content-Type: application/json'],
             CURLOPT_RETURNTRANSFER    => true,
-            CURLOPT_CONNECTTIMEOUT_MS => 1000,
-            CURLOPT_TIMEOUT_MS        => 2500,
+            CURLOPT_CONNECTTIMEOUT_MS => 4000,
+            CURLOPT_TIMEOUT_MS        => 20000, // LLM 생성에 충분한 시간 (20초) 부여
             CURLOPT_NOSIGNAL          => 1,
         ]);
 
