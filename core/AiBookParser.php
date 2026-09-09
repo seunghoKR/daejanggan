@@ -186,6 +186,10 @@ class AiBookParser
             }
         }
 
+        if (empty($data['publisher']) || $data['publisher'] === '대장간') {
+            $data['publisher'] = '도서출판 대장간';
+        }
+
         // 2) 상세 섹션 블록들 파싱
         $sections = [];
         foreach ($bodyBlocks as $block) {
@@ -203,14 +207,18 @@ class AiBookParser
 
         $data['sections'] = $sections;
 
-        // 3) 한줄 요약(summary) 추출
+        // 3) 한줄 요약(summary) 추출 & 따옴표 정돈
         if (!empty($sections['책소개'])) {
-            $intro = strip_tags($sections['책소개']);
-            if (preg_match('/^([^.!?\n]+[.!?])/u', $intro, $m)) {
+            $intro = trim(strip_tags($sections['책소개']));
+            // 앞뒤 따옴표/특수기호 제거
+            $intro = preg_replace('/^[“"\'‘](.*)[”"\'’]$/us', '$1', $intro);
+            if (preg_match('/^([^.!?\n]+[.!?](?:\s+[^.!?\n]+[.!?])?)/u', $intro, $m)) {
                 $data['summary'] = trim($m[1]);
             } else {
-                $data['summary'] = mb_substr($intro, 0, 120) . '...';
+                $data['summary'] = mb_substr($intro, 0, 140) . '...';
             }
+            // 최종 정리
+            $data['summary'] = trim(preg_replace('/^[“"\'‘]+|[”"\'’]+$/u', '', $data['summary']));
         }
 
         // 4) 서점 스타일 HTML description 구성

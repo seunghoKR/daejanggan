@@ -110,47 +110,47 @@ $mainCover = $book['cover_image'] ?: $galleryImages[0];
 
       <!-- 인용구 스타일 한줄 소개 -->
       <?php if (!empty($book['summary'])): ?>
-        <div class="border-l-2 border-secondary pl-4 py-1 my-1">
-          <p class="font-serif text-base text-primary italic leading-relaxed line-clamp-3">
-            "<?= htmlspecialchars(mb_substr(strip_tags($book['summary']), 0, 120)) ?>"
+        <div class="p-3.5 md:p-4 rounded-xl bg-[#faf6f0] border-l-4 border-[#b85a3a] my-1">
+          <p class="font-serif text-sm md:text-base text-[#2c3e50] italic leading-relaxed">
+            "<?= htmlspecialchars(trim(strip_tags($book['summary']))) ?>"
           </p>
         </div>
       <?php endif; ?>
 
-      <!-- 저자/출판 정보 -->
-      <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm border-t border-outline-variant pt-3 mt-1">
-        <div class="text-on-surface-variant">저자</div>
-        <div class="text-on-surface font-medium">
+      <!-- 저자/출판 메타데이터 (라벨 고정폭 64px 밀착 정렬) -->
+      <div class="grid grid-cols-[64px_1fr] gap-x-3 gap-y-2 text-xs md:text-sm border-t border-outline-variant/80 pt-3.5 mt-1">
+        <div class="text-on-surface-variant font-medium">저자</div>
+        <div class="text-on-surface font-medium leading-relaxed">
           <a href="/author/<?= urlencode($book['author']) ?>" class="text-primary hover:text-secondary hover:underline transition-colors">
             <?= htmlspecialchars($book['author']) ?>
           </a>
         </div>
 
-        <?php if ($book['translator']): ?>
-          <div class="text-on-surface-variant">역자</div>
-          <div class="text-on-surface"><?= htmlspecialchars($book['translator']) ?></div>
+        <?php if (!empty($book['translator'])): ?>
+          <div class="text-on-surface-variant font-medium">역자</div>
+          <div class="text-on-surface leading-relaxed"><?= htmlspecialchars($book['translator']) ?></div>
         <?php endif; ?>
 
-        <div class="text-on-surface-variant">출판사</div>
-        <div class="text-on-surface"><?= htmlspecialchars($book['publisher'] ?? '대장간') ?></div>
+        <div class="text-on-surface-variant font-medium">출판사</div>
+        <div class="text-on-surface leading-relaxed"><?= htmlspecialchars($book['publisher'] ?? '도서출판 대장간') ?></div>
 
-        <?php if ($book['publish_date']): ?>
-          <div class="text-on-surface-variant">발행일</div>
-          <div class="text-on-surface"><?= htmlspecialchars(date('Y년 m월 d일', strtotime($book['publish_date']))) ?></div>
+        <?php if (!empty($book['publish_date'])): ?>
+          <div class="text-on-surface-variant font-medium">발행일</div>
+          <div class="text-on-surface leading-relaxed"><?= htmlspecialchars(date('Y년 m월 d일', strtotime($book['publish_date']))) ?></div>
         <?php endif; ?>
 
-        <?php if ($book['isbn']): ?>
-          <div class="text-on-surface-variant">ISBN</div>
-          <div class="text-on-surface text-xs"><?= htmlspecialchars($book['isbn']) ?></div>
+        <?php if (!empty($book['isbn'])): ?>
+          <div class="text-on-surface-variant font-medium">ISBN</div>
+          <div class="text-on-surface leading-relaxed font-mono text-xs md:text-sm"><?= htmlspecialchars($book['isbn']) ?></div>
         <?php endif; ?>
       </div>
 
       <!-- 가격 -->
-      <div class="flex items-baseline gap-3 mt-2">
-        <span class="text-3xl font-bold text-primary"><?= number_format((int)$book['price']) ?>원</span>
+      <div class="flex items-baseline gap-3 mt-2 pt-1">
+        <span class="text-2xl md:text-3xl font-bold text-primary"><?= number_format((int)$book['price']) ?>원</span>
         <?php if ($book['original_price'] > $book['price']): ?>
-          <span class="text-base text-on-surface-variant line-through"><?= number_format((int)$book['original_price']) ?>원</span>
-          <span class="text-sm text-secondary font-semibold">
+          <span class="text-sm md:text-base text-on-surface-variant line-through"><?= number_format((int)$book['original_price']) ?>원</span>
+          <span class="text-xs md:text-sm text-secondary font-bold bg-secondary/10 px-2 py-0.5 rounded">
             <?= round((1 - $book['price'] / $book['original_price']) * 100) ?>% 할인
           </span>
         <?php endif; ?>
@@ -158,15 +158,14 @@ $mainCover = $book['cover_image'] ?: $galleryImages[0];
 
       <!-- 배송/적립 안내 -->
       <div class="flex flex-col gap-1 text-xs text-on-surface-variant">
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1.5">
           <span class="material-symbols-outlined text-sm text-primary">local_shipping</span>
-          배송비 <?= number_format($shippingFee) ?>원
-          (<?= number_format($freeMin) ?>원 이상 무료)
+          <span>배송비 <?= number_format($shippingFee) ?>원 (<?= number_format($freeMin) ?>원 이상 무료)</span>
         </div>
         <?php if ($earnPoint > 0): ?>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm text-tertiary">savings</span>
-            구매 시 <?= number_format($earnPoint) ?>p 적립
+            <span>구매 시 <?= number_format($earnPoint) ?>p 적립</span>
           </div>
         <?php endif; ?>
       </div>
