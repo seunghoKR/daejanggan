@@ -205,7 +205,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
 
           <div class="md:col-span-2">
             <label class="text-xs text-gray-600 mb-1 block font-medium">KG이니시스 웹결제 사인키 (SignKey) *</label>
-            <input type="text" name="inicis_signkey" value="<?= htmlspecialchars($settings['inicis_signkey']['key_value'] ?? 'NHRLWnM0bGFXTIRnbU1uRENmL29vdz0=') ?>"
+            <input type="text" name="inicis_signkey" value="<?= htmlspecialchars($settings['inicis_signkey']['key_value'] ?? 'NHRLWnM0bGFXTlRnbU1uRENmL29vdz09') ?>"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-mono text-gray-800 outline-none focus:border-blue-500"/>
             <p class="text-[11px] text-gray-400 mt-0.5">KG이니시스 상점관리자 > 가맹점정보 > 계약정보의 웹결제 SignKey</p>
           </div>

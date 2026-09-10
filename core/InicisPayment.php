@@ -26,7 +26,7 @@ final class InicisPayment
         if ($isTest === 1) {
             return 'SU5JTElURV9UU1RLRVlfU1VNTE1URV9LRVk='; // 테스트용 SignKey
         }
-        return trim($site['inicis_signkey'] ?? 'NHRLWnM0bGFXTIRnbU1uRENmL29vdz0=');
+        return trim($site['inicis_signkey'] ?? 'NHRLWnM0bGFXTlRnbU1uRENmL29vdz09');
     }
 
     /** 결제창 JS SDK URL (테스트: stgstdpay, 실결제: stdpay) */
