@@ -152,20 +152,20 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
       </div>
     </div>
 
-    <!-- 3. 카카오 알림톡 & SMS 설정 (확장 준비 영역) -->
+    <!-- 3. 카카오 알림톡 비즈니스 메시지 설정 -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-yellow-600 text-lg">chat</span>
-          <h2 class="font-bold text-gray-800 text-sm">카카오 알림톡 & SMS 비즈니스 메시지 연동 (준비)</h2>
+          <h2 class="font-bold text-gray-800 text-sm">카카오 알림톡 비즈니스 메시지 설정</h2>
         </div>
         <span class="text-xs px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-semibold">카카오 비즈메시지</span>
       </div>
       <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs text-gray-600 mb-1 block font-medium">카카오 REST API 키</label>
+          <label class="text-xs text-gray-600 mb-1 block font-medium">카카오 발신 프로필 키 / API Key</label>
           <input type="text" name="kakao_rest_key" value="<?= htmlspecialchars($settings['kakao_rest_key']['key_value'] ?? '') ?>"
-            placeholder="카카오 디벨로퍼스 REST API 키"
+            placeholder="알림톡 발신 프로필 키 또는 중계사 API 키"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-mono text-gray-800 outline-none focus:border-blue-500"/>
         </div>
         <div>
