@@ -24,11 +24,11 @@ $pageTitle = htmlspecialchars($pageTitle ?? $siteName);
 <meta property="og:site_name" content="<?= $siteName ?>"/>
 <meta property="og:title" content="<?= $pageTitle ?> — <?= $siteName ?>"/>
 <meta property="og:description" content="<?= htmlspecialchars($ogDescription ?? '도서출판 대장간 온라인 서점 — 신학, 평화, 정의, 아나뱁티스트 도서') ?>"/>
-<meta property="og:image" content="<?= htmlspecialchars($ogImage ?? 'http://ndaejanggan.iwinv.net/assets/images/logo.png') ?>"/>
-<meta property="og:url" content="http://ndaejanggan.iwinv.net<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '/') ?>"/>
+<meta property="og:image" content="<?= htmlspecialchars($ogImage ?? ((defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') . '/assets/images/logo.png')) ?>"/>
+<meta property="og:url" content="<?= (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') . htmlspecialchars($_SERVER['REQUEST_URI'] ?? '/') ?>"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="<?= $pageTitle ?>"/>
-<meta name="twitter:image" content="<?= htmlspecialchars($ogImage ?? 'http://ndaejanggan.iwinv.net/assets/images/logo.png') ?>"/>
+<meta name="twitter:image" content="<?= htmlspecialchars($ogImage ?? ((defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') . '/assets/images/logo.png')) ?>"/>
 
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -59,7 +59,7 @@ window.shareSNS = function(platform, customTitle, customUrl, customImage, custom
   const rawTitle   = customTitle || document.title;
   const url        = encodeURIComponent(currentUrl);
   const title      = encodeURIComponent(rawTitle);
-  const imageUrl   = customImage || 'http://ndaejanggan.iwinv.net/assets/images/logo.png';
+  const imageUrl   = customImage || '<?= (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') ?>/assets/images/logo.png';
   const desc       = customDesc || '도서출판 대장간';
 
   let shareUrl = '';

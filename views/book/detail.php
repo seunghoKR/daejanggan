@@ -8,8 +8,8 @@
  * @var bool  $isWishlisted
  * @var int   $cartCount
  */
-$pageTitle = $book['title'] ?? '도서 상세';
-$ogImage   = !empty($book['cover_image']) ? 'http://ndaejanggan.iwinv.net' . $book['cover_image'] : 'http://ndaejanggan.iwinv.net/assets/images/logo.png';
+$siteBaseUrl = defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org';
+$ogImage   = !empty($book['cover_image']) ? $siteBaseUrl . $book['cover_image'] : $siteBaseUrl . '/assets/images/logo.png';
 $ogDescription = !empty($book['summary']) ? mb_substr(strip_tags($book['summary']), 0, 120) . '...' : (!empty($book['description']) ? mb_substr(strip_tags($book['description']), 0, 120) . '...' : '도서출판 대장간 도서 안내');
 include APP_ROOT . '/views/layouts/header.php';
 

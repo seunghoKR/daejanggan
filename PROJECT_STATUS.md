@@ -1,9 +1,9 @@
 # 📚 도서출판 대장간 신규 온라인 쇼핑몰 — 전체 작업 현황 및 인수인계 가이드
 
-> **최종 작성일시:** 2026-09-09  
+> **최종 작성일시:** 2026-09-10  
 > **담당:** AI 디자인실장 영자 (Youngja)  
 > **현재 버전:** `v1.4.0`  
-> **라이브 서비스 URL:** [http://ndaejanggan.iwinv.net/](http://ndaejanggan.iwinv.net/)  
+> **라이브 서비스 URL:** [https://www.daejanggan.org/](https://www.daejanggan.org/)  
 > **GitHub 저장소:** [https://github.com/seunghoKR/daejanggan](https://github.com/seunghoKR/daejanggan)
 
 ---
@@ -12,7 +12,7 @@
 
 | 구분 | 정보 | 비고 |
 | :--- | :--- | :--- |
-| **라이브 도메인** | `http://ndaejanggan.iwinv.net/` | 실시간 운영 중 (v1.4.0) |
+| **라이브 도메인** | `https://www.daejanggan.org/` (기본: `115.68.168.246`)<br/>`http://ndaejanggan.iwinv.net/` (개발/서브) | 실시간 운영 중 (v1.4.0, SSL 적용) |
 | **서버 IP** | `115.68.168.246` | iwinv 클라우드 호스팅 |
 | **FTP 접속** | ID: `ndaejanggan` / PW: `seungho0409#` | Web Root: `/public_html` (Port: 21) |
 | **DB 접속** | Host: `localhost` / DB: `ndaejanggan`<br/>ID: `ndaejanggan` / PW: `#seungho0409` | MariaDB / Charset: `utf8mb4_general_ci` |
@@ -136,7 +136,7 @@ python deploy_ftp.py
 ```
 
 ### 3단계: 실서버 라이브 확인
-- 브라우저에서 [http://ndaejanggan.iwinv.net/](http://ndaejanggan.iwinv.net/) 에 접속하여 `F5`(새로고침)로 확인합니다.
+- 브라우저에서 [https://www.daejanggan.org/](https://www.daejanggan.org/) 에 접속하여 `F5`(새로고침)로 확인합니다. (개발/임시: `http://ndaejanggan.iwinv.net/`)
 
 ---
 

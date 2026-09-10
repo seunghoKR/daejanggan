@@ -39,8 +39,8 @@ $kakaoKey = htmlspecialchars($site['kakao_map_key'] ?? '');
     <input type="hidden" name="buyername" id="inicis_buyername" value="<?= htmlspecialchars($user['name'] ?? '') ?>"/>
     <input type="hidden" name="buyertel" id="inicis_buyertel" value="<?= htmlspecialchars($user['phone'] ?? '') ?>"/>
     <input type="hidden" name="buyeremail" id="inicis_buyeremail" value="<?= htmlspecialchars($user['email'] ?? '') ?>"/>
-    <input type="hidden" name="returnUrl" value="http://ndaejanggan.iwinv.net/order/inicis/return"/>
-    <input type="hidden" name="closeUrl" value="http://ndaejanggan.iwinv.net/order/inicis/close"/>
+    <input type="hidden" name="returnUrl" value="<?= (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') ?>/order/inicis/return"/>
+    <input type="hidden" name="closeUrl" value="<?= (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') ?>/order/inicis/close"/>
     <input type="hidden" name="gopaymethod" id="inicis_gopaymethod" value="Card"/>
     <input type="hidden" name="acceptmethod" value="HPP(1):below1000:center:va_receipt"/>
 

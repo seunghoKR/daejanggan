@@ -14,7 +14,8 @@ $typeNames = [
 $boardTitle = $typeNames[$type] ?? ($typeNames[$post['type'] ?? ''] ?? '커뮤니티');
 $pageTitle  = $post['title'];
 $ogDescription = mb_substr(strip_tags($post['content']), 0, 120) . '...';
-$ogImage    = !empty($post['file_path']) ? 'http://ndaejanggan.iwinv.net' . $post['file_path'] : 'http://ndaejanggan.iwinv.net/assets/images/logo.png';
+$siteBaseUrl = defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org';
+$ogImage    = !empty($post['file_path']) ? $siteBaseUrl . $post['file_path'] : $siteBaseUrl . '/assets/images/logo.png';
 include APP_ROOT . '/views/layouts/header.php';
 ?>
 

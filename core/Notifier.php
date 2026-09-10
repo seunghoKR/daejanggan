@@ -151,7 +151,7 @@ class Notifier
              . "👤 <b>주문자:</b> {$orderer} 님\n"
              . "💰 <b>결제금액:</b> {$amount}원 ({$payMethod})\n"
              . "⏱️ <b>주문일시:</b> {$now}\n\n"
-             . "👉 <a href=\"http://ndaejanggan.iwinv.net/admin/orders\">관리자 주문관리 바로가기</a>";
+             . "👉 <a href=\"" . (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') . "/admin/orders\">관리자 주문관리 바로가기</a>";
 
         $res = self::sendAdminTelegram($msg);
         return $res['success'] ?? false;
@@ -208,7 +208,7 @@ class Notifier
              . "📄 <b>예상원고량:</b> {$pages}\n"
              . "📁 <b>첨부상태:</b> {$hasFile}\n"
              . "⏱️ <b>접수일시:</b> {$now}\n\n"
-             . "👉 <a href=\"http://ndaejanggan.iwinv.net/admin/inquiries\">관리자 출판문의 대시보드 바로가기</a>";
+             . "👉 <a href=\"" . (defined('SITE_URL') ? SITE_URL : 'https://www.daejanggan.org') . "/admin/inquiries\">관리자 출판문의 대시보드 바로가기</a>";
 
         $res = self::sendAdminTelegram($msg);
         return $res['success'] ?? false;

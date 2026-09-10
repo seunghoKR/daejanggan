@@ -3,6 +3,13 @@ RewriteEngine On
 RewriteBase /
 
 # ============================================================
+# HTTPS (SSL) 상시 강제 적용 & www 정규화
+# ============================================================
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# ============================================================
 # 보안: 내부 PHP 소스 디렉토리 직접 접근 차단
 # ============================================================
 RewriteRule ^(config|core|controllers|views|migration)/ - [F,L]

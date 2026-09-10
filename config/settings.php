@@ -16,6 +16,8 @@ define('APP_ENV',  $_ENV['APP_ENV'] ?? 'production'); // 'development' or 'produ
 define('APP_DEBUG', APP_ENV === 'development');
 define('APP_VERSION', 'v1.4.0');
 define('APP_NAME', '도서출판 대장간');
+define('SITE_DOMAIN', $_ENV['SITE_DOMAIN'] ?? 'www.daejanggan.org');
+define('SITE_URL', 'https://' . SITE_DOMAIN);
 
 define('UPLOAD_PATH',    APP_ROOT . '/uploads');
 define('UPLOAD_URL',     '/uploads');

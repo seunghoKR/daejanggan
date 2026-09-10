@@ -94,7 +94,10 @@ powershell -ExecutionPolicy Bypass -File .\deploy_ftp.ps1
 
 ## 📋 버전 변경 이력 (Changelog)
 
-### `v1.4.0` (2026-09-09)
+### `v1.4.0` (2026-09-10)
+- **도메인 연결 및 상시 SSL (HTTPS) 보안 접속 표준화**:
+  - 대표 도메인 `https://www.daejanggan.org` 적용 및 `.htaccess` 상시 HTTPS 리디렉션 규칙 탑재.
+  - 오픈그래프(OG) 메타태그, SNS 공유, 텔레그램 알림 링크 및 이니시스 결제 URL 전역 동기화.
 - **출판의뢰 시스템 및 관리자 접수 센터 구축**:
   - 사용자 맞춤형 출판의뢰 안내 및 접수 폼 (`/community/inquiry`), 로봇 방지 캡챠(`Captcha.php`) 연동.
   - 관리자 대시보드 출판의뢰 문의 목록 (`/admin/inquiries`) 및 상세 뷰어 (`/admin/inquiry/detail/{id}`) 제공, 미확인 문의 건수 실시간 배지 표시.
