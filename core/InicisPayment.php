@@ -29,6 +29,17 @@ final class InicisPayment
         return trim($site['inicis_signkey'] ?? 'NHRLWnM0bGFXTIRnbU1uRENmL29vdz0=');
     }
 
+    /** 결제창 JS SDK URL (테스트: stgstdpay, 실결제: stdpay) */
+    public static function getScriptUrl(): string
+    {
+        $site = $GLOBALS['site'] ?? [];
+        $isTest = (int)($site['inicis_test'] ?? 0);
+        if ($isTest === 1) {
+            return 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'; // 테스트 스테이징 서버
+        }
+        return 'https://stdpay.inicis.com/stdjs/INIStdPay.js'; // 실운영 서버
+    }
+
     /** mKey 생성: sha256(SignKey) */
     public static function makeMKey(string $signKey = ''): string
     {

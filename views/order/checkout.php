@@ -8,8 +8,8 @@ $site     = $GLOBALS['site'] ?? [];
 $kakaoKey = htmlspecialchars($site['kakao_map_key'] ?? '');
 ?>
 
-<!-- KG이니시스 웹표준 결제창 SDK -->
-<script src="https://stdpay.inicis.com/stdjs/INIStdPay.js"></script>
+<!-- KG이니시스 웹표준 결제창 SDK (테스트/실결제 동적 연동) -->
+<script src="<?= InicisPayment::getScriptUrl() ?>"></script>
 
 <main class="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8 w-full" x-data="{
   payMethod: 'CARD',
