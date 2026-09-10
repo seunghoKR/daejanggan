@@ -331,6 +331,149 @@ include APP_ROOT . '/views/layouts/header.php';
   </section>
   <?php endif; ?>
 
+  <!-- ===================== [리뉴얼 오픈 안내 팝업 모달] ===================== -->
+  <div id="renewal-popup-modal"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none"
+       aria-modal="true" role="dialog" aria-labelledby="popup-title">
+    
+    <div id="renewal-popup-card"
+         class="relative w-full max-w-lg bg-surface text-on-surface rounded-2xl shadow-2xl border border-outline-variant overflow-hidden transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]">
+      
+      <!-- 상단 장식 헤더 -->
+      <div class="relative bg-gradient-to-r from-[#07131e] via-[#0d233a] to-[#1a3a5f] text-white px-6 py-6 text-center shrink-0">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/30 text-amber-200 text-xs font-semibold tracking-wider uppercase mb-2 border border-secondary/40 shadow-sm">
+          <span class="material-symbols-outlined text-xs">celebration</span>
+          Renewal Open
+        </div>
+        <h3 id="popup-title" class="font-serif text-xl md:text-2xl font-bold leading-snug">
+          도서출판 대장간 웹사이트<br/>새단장 리뉴얼 오픈 안내
+        </h3>
+        <p class="text-xs text-white/80 mt-1.5 font-sans">
+          더 편리하고 새로워진 대장간 온라인 서점에 오신 것을 환영합니다!
+        </p>
+
+        <!-- 우측 상단 X 닫기 버튼 -->
+        <button type="button" onclick="closeRenewalPopup()" class="absolute top-4 right-4 text-white/70 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors" title="닫기">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- 모달 본문 (스크롤 가능) -->
+      <div class="p-5 md:p-6 overflow-y-auto space-y-4 text-sm leading-relaxed text-on-surface">
+        
+        <!-- 1. 기존 회원 안내 박스 -->
+        <div class="bg-amber-50/90 border border-amber-200/90 rounded-xl p-4 flex gap-3.5 items-start shadow-sm">
+          <span class="material-symbols-outlined text-amber-600 text-2xl shrink-0 mt-0.5">key</span>
+          <div>
+            <h4 class="font-bold text-amber-950 text-sm">기존 회원님 로그인 안내</h4>
+            <p class="text-xs text-amber-900 mt-1 leading-relaxed">
+              기존 대장간 웹사이트에서 가입하셨던 회원님은 별도의 재가입 없이 <strong>기존 아이디와 비밀번호 그대로</strong> 로그인하여 이용하실 수 있습니다.
+            </p>
+            <p class="text-[11px] text-amber-800/90 mt-1.5 font-medium">
+              ※ 로그인 후 <a href="/mypage" class="underline font-bold hover:text-amber-950 text-amber-900">마이페이지</a>에서 회원 정보와 기본 배송지를 확인해 주세요.
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. 신규 쇼핑몰 주요 개편 안내 -->
+        <div class="space-y-2 pt-1">
+          <h4 class="font-bold text-primary text-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-secondary text-base">auto_awesome</span>
+            새로워진 대장간 쇼핑몰 둘러보기
+          </h4>
+          
+          <ul class="space-y-2 text-xs text-on-surface-variant">
+            <li class="flex items-start gap-2.5 bg-surface-variant/40 p-2.5 rounded-xl border border-outline-variant/50">
+              <span class="material-symbols-outlined text-secondary text-base shrink-0 mt-0.5">menu_book</span>
+              <div>
+                <strong class="text-on-surface">주제별 도서 & 시리즈(자본론/전집) 분류</strong><br/>
+                신학, 평화, 정의, 역사, 인문학 등 카테고리별 도서를 손쉽게 탐색할 수 있습니다.
+              </div>
+            </li>
+            <li class="flex items-start gap-2.5 bg-surface-variant/40 p-2.5 rounded-xl border border-outline-variant/50">
+              <span class="material-symbols-outlined text-secondary text-base shrink-0 mt-0.5">shopping_bag</span>
+              <div>
+                <strong class="text-on-surface">간편 주문 & 비회원 도서 주문 지원</strong><br/>
+                회원가입 절차 없이도 누구나 손쉽게 도서를 주문하고 배송 조회를 하실 수 있습니다.
+              </div>
+            </li>
+            <li class="flex items-start gap-2.5 bg-surface-variant/40 p-2.5 rounded-xl border border-outline-variant/50">
+              <span class="material-symbols-outlined text-secondary text-base shrink-0 mt-0.5">edit_note</span>
+              <div>
+                <strong class="text-on-surface">온라인 출판의뢰 & 독자 커뮤니티 개편</strong><br/>
+                원고 투고와 출판 상담을 온라인으로 간편하게 신청하고 소통하실 수 있습니다.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- 하단 푸터 바 (다시 열지 않음 체크 + 닫기 버튼) -->
+      <div class="bg-gray-50 border-t border-outline-variant/60 px-5 py-3.5 flex items-center justify-between gap-3 shrink-0">
+        <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-on-surface-variant hover:text-on-surface font-medium">
+          <input type="checkbox" id="popup-dismiss-today" class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"/>
+          <span>오늘 하루 열지 않기</span>
+        </label>
+        <button type="button" onclick="closeRenewalPopup()"
+                class="px-5 py-2 bg-[#07131e] text-white text-xs font-semibold rounded-xl hover:bg-gray-800 transition-colors shadow-sm inline-flex items-center gap-1">
+          <span>확인</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const STORAGE_KEY = 'daejanggan_renewal_popup_dismiss_until';
+    const modal = document.getElementById('renewal-popup-modal');
+    const card  = document.getElementById('renewal-popup-card');
+    const check = document.getElementById('popup-dismiss-today');
+
+    if (!modal || !card) return;
+
+    // 팝업 노출 여부 판단 (localStorage 만료 확인)
+    const dismissUntil = localStorage.getItem(STORAGE_KEY);
+    const now = Date.now();
+
+    if (!dismissUntil || now > parseInt(dismissUntil, 10)) {
+      // 0.3초 후 부드럽게 팝업 등장
+      setTimeout(() => {
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 300);
+    }
+
+    window.closeRenewalPopup = function() {
+      if (check && check.checked) {
+        // 오늘 하루(24시간) 동안 열지 않음 저장
+        const expireTime = Date.now() + (24 * 60 * 60 * 1000);
+        localStorage.setItem(STORAGE_KEY, expireTime.toString());
+      }
+
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+    };
+
+    // 백드롭 클릭 시 닫기
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        window.closeRenewalPopup();
+      }
+    });
+
+    // ESC 키 누를 시 닫기
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !modal.classList.contains('pointer-events-none')) {
+        window.closeRenewalPopup();
+      }
+    });
+  })();
+  </script>
+
 </main>
 
 <?php include APP_ROOT . '/views/layouts/footer.php'; ?>
