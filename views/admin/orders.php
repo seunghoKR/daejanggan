@@ -18,14 +18,16 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
       <table class="w-full text-sm text-left">
         <thead class="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200">
           <tr>
-            <th class="px-4 py-3">주문번호</th>
-            <th class="px-4 py-3">주문자 / 연락처</th>
+            <th class="px-4 py-3 whitespace-nowrap">주문번호</th>
+            <th class="px-4 py-3 whitespace-nowrap">주문일시</th>
+            <th class="px-4 py-3">주문도서 (수량)</th>
+            <th class="px-4 py-3 whitespace-nowrap">주문자 / 연락처</th>
             <th class="px-4 py-3">수령인 / 주소</th>
-            <th class="px-4 py-3 text-right">결제금액</th>
-            <th class="px-4 py-3 text-center">결제상태</th>
-            <th class="px-4 py-3 text-center">배송상태</th>
-            <th class="px-4 py-3 text-center">운송장번호</th>
-            <th class="px-4 py-3 text-center">상태변경</th>
+            <th class="px-4 py-3 text-right whitespace-nowrap">결제금액</th>
+            <th class="px-4 py-3 text-center whitespace-nowrap">결제상태</th>
+            <th class="px-4 py-3 text-center whitespace-nowrap">배송상태</th>
+            <th class="px-4 py-3 text-center whitespace-nowrap">운송장번호</th>
+            <th class="px-4 py-3 text-center whitespace-nowrap">상태변경</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -33,37 +35,87 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
             $payColors = ['WAITING'=>'bg-yellow-100 text-yellow-700', 'PAID'=>'bg-green-100 text-green-700', 'CANCELLED'=>'bg-red-100 text-red-700', 'REFUNDED'=>'bg-gray-100 text-gray-600'];
             $delColors = ['PREPARING'=>'bg-gray-100 text-gray-600', 'SHIPPING'=>'bg-blue-100 text-blue-700', 'DELIVERED'=>'bg-green-100 text-green-700'];
           ?>
-            <tr class="hover:bg-gray-50" id="order-row-<?= (int)$o['id'] ?>">
-              <td class="px-4 py-3 font-mono text-xs text-gray-700"><?= htmlspecialchars($o['order_no']) ?></td>
-              <td class="px-4 py-3">
+            <tr class="hover:bg-gray-50 transition-colors" id="order-row-<?= (int)$o['id'] ?>">
+              <!-- 주문번호 -->
+              <td class="px-4 py-3 font-mono text-xs text-gray-700 whitespace-nowrap font-medium">
+                <?= htmlspecialchars($o['order_no']) ?>
+              </td>
+
+              <!-- 주문일시 -->
+              <td class="px-4 py-3 font-mono text-xs text-gray-600 whitespace-nowrap">
+                <?= !empty($o['created_at']) ? date('Y-m-d H:i', strtotime($o['created_at'])) : '-' ?>
+              </td>
+
+              <!-- 주문도서 (수량) -->
+              <td class="px-4 py-3 min-w-[200px] max-w-[280px]">
+                <?php if (!empty($o['items'])): ?>
+                  <div class="space-y-1.5">
+                    <?php foreach ($o['items'] as $item): ?>
+                      <div class="flex items-start justify-between gap-2 text-xs">
+                        <span class="font-medium text-gray-900 line-clamp-1" title="<?= htmlspecialchars($item['book_title']) ?>">
+                          <?= htmlspecialchars($item['book_title']) ?>
+                        </span>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                          <?= number_format((int)$item['quantity']) ?>권
+                        </span>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                <?php else: ?>
+                  <span class="text-xs text-gray-400">도서 정보 없음</span>
+                <?php endif; ?>
+              </td>
+
+              <!-- 주문자 / 연락처 -->
+              <td class="px-4 py-3 whitespace-nowrap">
                 <div class="font-medium text-gray-900"><?= htmlspecialchars($o['orderer_name']) ?></div>
-                <div class="text-xs text-gray-500"><?= htmlspecialchars($o['orderer_phone']) ?></div>
+                <div class="text-xs text-gray-500 font-mono"><?= htmlspecialchars($o['orderer_phone']) ?></div>
               </td>
-              <td class="px-4 py-3">
+
+              <!-- 수령인 / 주소 -->
+              <td class="px-4 py-3 min-w-[180px] max-w-[260px]">
                 <div class="font-medium text-gray-900"><?= htmlspecialchars($o['receiver_name']) ?></div>
-                <div class="text-xs text-gray-500 line-clamp-1"><?= htmlspecialchars($o['shipping_address1'] . ' ' . $o['shipping_address2']) ?></div>
+                <div class="text-xs text-gray-500 line-clamp-1" title="<?= htmlspecialchars($o['shipping_address1'] . ' ' . $o['shipping_address2']) ?>">
+                  <?= htmlspecialchars($o['shipping_address1'] . ' ' . $o['shipping_address2']) ?>
+                </div>
               </td>
-              <td class="px-4 py-3 text-right font-medium text-gray-900"><?= number_format((int)$o['total_pay_price']) ?>원</td>
-              <td class="px-4 py-3 text-center">
-                <select onchange="updateOrderStatus(<?= (int)$o['id'] ?>)" id="pay-status-<?= (int)$o['id'] ?>" class="text-xs border rounded px-1.5 py-1">
+
+              <!-- 결제금액 -->
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <div class="font-bold text-gray-900"><?= number_format((int)$o['total_pay_price']) ?>원</div>
+                <div class="text-[11px] text-gray-400"><?= htmlspecialchars($o['pay_method'] ?? '신용카드') ?></div>
+              </td>
+
+              <!-- 결제상태 -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <select onchange="updateOrderStatus(<?= (int)$o['id'] ?>)" id="pay-status-<?= (int)$o['id'] ?>" class="text-xs border rounded-lg px-2 py-1 bg-white focus:ring-1 focus:ring-primary">
                   <option value="WAITING" <?= ($o['pay_status'] === 'WAITING') ? 'selected' : '' ?>>입금대기</option>
                   <option value="PAID" <?= ($o['pay_status'] === 'PAID') ? 'selected' : '' ?>>결제완료</option>
                   <option value="CANCELLED" <?= ($o['pay_status'] === 'CANCELLED') ? 'selected' : '' ?>>취소</option>
                   <option value="REFUNDED" <?= ($o['pay_status'] === 'REFUNDED') ? 'selected' : '' ?>>환불</option>
                 </select>
               </td>
-              <td class="px-4 py-3 text-center">
-                <select onchange="updateOrderStatus(<?= (int)$o['id'] ?>)" id="del-status-<?= (int)$o['id'] ?>" class="text-xs border rounded px-1.5 py-1">
+
+              <!-- 배송상태 -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <select onchange="updateOrderStatus(<?= (int)$o['id'] ?>)" id="del-status-<?= (int)$o['id'] ?>" class="text-xs border rounded-lg px-2 py-1 bg-white focus:ring-1 focus:ring-primary">
                   <option value="PREPARING" <?= ($o['delivery_status'] === 'PREPARING') ? 'selected' : '' ?>>배송준비</option>
                   <option value="SHIPPING" <?= ($o['delivery_status'] === 'SHIPPING') ? 'selected' : '' ?>>배송중</option>
                   <option value="DELIVERED" <?= ($o['delivery_status'] === 'DELIVERED') ? 'selected' : '' ?>>배송완료</option>
                 </select>
               </td>
-              <td class="px-4 py-3 text-center">
-                <input type="text" id="tracking-<?= (int)$o['id'] ?>" value="<?= htmlspecialchars($o['tracking_number'] ?? '') ?>" placeholder="운송장입력" class="text-xs border rounded px-2 py-1 w-28 text-center" onchange="updateOrderStatus(<?= (int)$o['id'] ?>)"/>
+
+              <!-- 운송장번호 -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <input type="text" id="tracking-<?= (int)$o['id'] ?>" value="<?= htmlspecialchars($o['tracking_number'] ?? '') ?>" placeholder="운송장번호" class="text-xs border rounded-lg px-2 py-1 w-28 text-center font-mono focus:ring-1 focus:ring-primary" onchange="updateOrderStatus(<?= (int)$o['id'] ?>)"/>
               </td>
-              <td class="px-4 py-3 text-center">
-                <button onclick="updateOrderStatus(<?= (int)$o['id'] ?>)" class="text-xs px-2.5 py-1 bg-gray-800 text-white rounded hover:bg-gray-700">저장</button>
+
+              <!-- 상태변경 버튼 -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <button onclick="updateOrderStatus(<?= (int)$o['id'] ?>)" class="text-xs px-2.5 py-1.5 bg-[#07131e] text-white rounded-lg hover:bg-gray-800 transition-colors inline-flex items-center gap-1 shadow-sm">
+                  <span class="material-symbols-outlined text-xs">save</span>
+                  저장
+                </button>
               </td>
             </tr>
           <?php endforeach; ?>

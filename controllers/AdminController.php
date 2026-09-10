@@ -507,6 +507,23 @@ final class AdminController
             array_merge($bind, [$perPage, $offset])
         );
 
+        if (!empty($orders)) {
+            $orderIds = array_column($orders, 'id');
+            $inClause = implode(',', array_fill(0, count($orderIds), '?'));
+            $items = Database::fetchAll(
+                "SELECT * FROM order_items WHERE order_id IN ($inClause)",
+                $orderIds
+            );
+            $itemsByOrder = [];
+            foreach ($items as $it) {
+                $itemsByOrder[$it['order_id']][] = $it;
+            }
+            foreach ($orders as &$ord) {
+                $ord['items'] = $itemsByOrder[$ord['id']] ?? [];
+            }
+            unset($ord);
+        }
+
         $totalPages = (int)ceil($total / $perPage);
         include APP_ROOT . '/views/admin/orders.php';
     }
