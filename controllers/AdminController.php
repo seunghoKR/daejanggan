@@ -40,9 +40,26 @@ final class AdminController
 
         // 최근 주문 10건
         $recentOrders = Database::fetchAll(
-            "SELECT order_no, orderer_name, total_pay_price, pay_status, delivery_status, created_at
+            "SELECT id, order_no, orderer_name, orderer_phone, total_pay_price, pay_status, delivery_status, created_at
              FROM orders ORDER BY created_at DESC LIMIT 10"
         );
+
+        if (!empty($recentOrders)) {
+            $orderIds = array_column($recentOrders, 'id');
+            $inClause = implode(',', array_fill(0, count($orderIds), '?'));
+            $items = Database::fetchAll(
+                "SELECT * FROM order_items WHERE order_id IN ($inClause)",
+                $orderIds
+            );
+            $itemsByOrder = [];
+            foreach ($items as $it) {
+                $itemsByOrder[$it['order_id']][] = $it;
+            }
+            foreach ($recentOrders as &$ord) {
+                $ord['items'] = $itemsByOrder[$ord['id']] ?? [];
+            }
+            unset($ord);
+        }
 
         include APP_ROOT . '/views/admin/dashboard.php';
     }
