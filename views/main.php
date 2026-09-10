@@ -412,8 +412,8 @@ include APP_ROOT . '/views/layouts/header.php';
       <!-- 하단 푸터 바 (다시 열지 않음 체크 + 닫기 버튼) -->
       <div class="bg-gray-50 border-t border-outline-variant/60 px-5 py-3.5 flex items-center justify-between gap-3 shrink-0">
         <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-on-surface-variant hover:text-on-surface font-medium">
-          <input type="checkbox" id="popup-dismiss-today" class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"/>
-          <span>오늘 하루 열지 않기</span>
+          <input type="checkbox" id="popup-dismiss-permanent" class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"/>
+          <span>다시 열지 않기</span>
         </label>
         <button type="button" onclick="closeRenewalPopup()"
                 class="px-5 py-2 bg-[#07131e] text-white text-xs font-semibold rounded-xl hover:bg-gray-800 transition-colors shadow-sm inline-flex items-center gap-1">
@@ -426,18 +426,17 @@ include APP_ROOT . '/views/layouts/header.php';
 
   <script>
   (function() {
-    const STORAGE_KEY = 'daejanggan_renewal_popup_dismiss_until';
+    const STORAGE_KEY = 'daejanggan_renewal_popup_dismissed_v1';
     const modal = document.getElementById('renewal-popup-modal');
     const card  = document.getElementById('renewal-popup-card');
-    const check = document.getElementById('popup-dismiss-today');
+    const check = document.getElementById('popup-dismiss-permanent');
 
     if (!modal || !card) return;
 
-    // 팝업 노출 여부 판단 (localStorage 만료 확인)
-    const dismissUntil = localStorage.getItem(STORAGE_KEY);
-    const now = Date.now();
+    // 팝업 노출 여부 판단 (localStorage 'dismissed' 여부 확인)
+    const isDismissed = localStorage.getItem(STORAGE_KEY);
 
-    if (!dismissUntil || now > parseInt(dismissUntil, 10)) {
+    if (!isDismissed) {
       // 0.3초 후 부드럽게 팝업 등장
       setTimeout(() => {
         modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -448,9 +447,8 @@ include APP_ROOT . '/views/layouts/header.php';
 
     window.closeRenewalPopup = function() {
       if (check && check.checked) {
-        // 오늘 하루(24시간) 동안 열지 않음 저장
-        const expireTime = Date.now() + (24 * 60 * 60 * 1000);
-        localStorage.setItem(STORAGE_KEY, expireTime.toString());
+        // '다시 열지 않기' 영구 저장
+        localStorage.setItem(STORAGE_KEY, 'true');
       }
 
       modal.classList.add('opacity-0', 'pointer-events-none');
