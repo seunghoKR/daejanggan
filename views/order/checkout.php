@@ -33,7 +33,7 @@ $kakaoKey = htmlspecialchars($site['kakao_map_key'] ?? '');
     <input type="hidden" name="timestamp" value="<?= htmlspecialchars($inicisTimestamp) ?>"/>
     <input type="hidden" name="oid" id="inicis_oid" value="<?= htmlspecialchars($inicisOid) ?>"/>
     <input type="hidden" name="order_no" value="<?= htmlspecialchars($inicisOid) ?>"/>
-    <input type="hidden" name="price" :value="finalTotal"/>
+    <input type="hidden" name="price" id="inicis_price" value="<?= (int)$total ?>" :value="finalTotal"/>
     <input type="hidden" name="currency" value="WON"/>
     <input type="hidden" name="goodname" value="<?= htmlspecialchars($goodName) ?>"/>
     <input type="hidden" name="buyername" id="inicis_buyername" value="<?= htmlspecialchars($user['name'] ?? '') ?>"/>
@@ -345,6 +345,14 @@ function submitPayment() {
   }
 
   const payMethod = document.querySelector('input[name="pay_method"]:checked')?.value || 'CARD';
+
+  // 주문자 정보 hidden 필드에 즉시 동기화
+  const ordererName  = (form.querySelector('input[name="orderer_name"]')?.value || '').trim();
+  const ordererPhone = (form.querySelector('input[name="orderer_phone"]')?.value || '').trim();
+  const ordererEmail = (form.querySelector('input[name="orderer_email"]')?.value || '').trim();
+  if (ordererName)  document.getElementById('inicis_buyername').value  = ordererName;
+  if (ordererPhone) document.getElementById('inicis_buyertel').value   = ordererPhone;
+  if (ordererEmail) document.getElementById('inicis_buyeremail').value = ordererEmail;
 
   // 1. 일반 무통장 입금인 경우 -> 폼 바로 제출
   if (payMethod === 'BANK') {
