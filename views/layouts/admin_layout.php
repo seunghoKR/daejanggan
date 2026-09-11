@@ -12,12 +12,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>관리자 — <?= htmlspecialchars($pageTitle ?? '대장간') ?></title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- jQuery & Summernote Lite WYSIWYG 에디터 -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/lang/summernote-ko-KR.min.js"></script>
+
 <style>
   body { font-family: 'Noto Sans KR', sans-serif; background: #f4f3f1; }
   .admin-sidebar a.active { background: #1c2833; color: #fff; }
+  /* Summernote 관리자 맞춤 UI 스타일링 */
+  .note-editor.note-frame { border-radius: 0.75rem; border-color: #d1d5db; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); overflow: hidden; background: #fff; }
+  .note-editor .note-toolbar { background-color: #f9fafb; border-bottom: 1px solid #e5e7eb; padding: 6px 10px; }
+  .note-btn { border-radius: 0.375rem !important; border-color: #d1d5db !important; background: #fff !important; font-size: 12px !important; }
+  .note-btn:hover { background: #f3f4f6 !important; }
+  .note-editable { font-family: 'Noto Sans KR', sans-serif; font-size: 14px; line-height: 1.7; color: #1f2937; min-height: 240px; }
 </style>
 </head>
 <body class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: true }">
