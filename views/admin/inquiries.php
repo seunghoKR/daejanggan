@@ -47,14 +47,14 @@ $statusLabels = [
       <table class="w-full text-left text-xs">
         <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold">
           <tr>
-            <th class="py-3 px-4 w-14 text-center">번호</th>
-            <th class="py-3 px-4 w-28 text-center">상태</th>
-            <th class="py-3 px-4 w-28">출판형태</th>
-            <th class="py-3 px-4">도서명 (가제) / 기획주제</th>
-            <th class="py-3 px-4 w-32">의뢰자 / 연락처</th>
-            <th class="py-3 px-4 w-20 text-center">첨부파일</th>
-            <th class="py-3 px-4 w-28 text-center">접수일시</th>
-            <th class="py-3 px-4 w-20 text-center">관리</th>
+            <th class="py-3 px-4 w-16 text-center whitespace-nowrap">번호</th>
+            <th class="py-3 px-4 w-28 text-center whitespace-nowrap">상태</th>
+            <th class="py-3 px-4 w-32 whitespace-nowrap">출판형태</th>
+            <th class="py-3 px-4 min-w-[260px]">도서명 (가제) / 기획주제</th>
+            <th class="py-3 px-4 w-48 whitespace-nowrap">의뢰자 / 연락처</th>
+            <th class="py-3 px-4 w-24 text-center whitespace-nowrap">첨부파일</th>
+            <th class="py-3 px-4 w-36 text-center whitespace-nowrap">접수일시</th>
+            <th class="py-3 px-4 w-28 text-center whitespace-nowrap">관리</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-gray-700">
@@ -64,16 +64,16 @@ $statusLabels = [
             </tr>
           <?php else: ?>
             <?php foreach ($inquiries as $inq):
-              $st = $statusLabels[$inq['status']] ?? ['대기', 'bg-gray-100 text-gray-700'];
+              $st = $statusLabels[$inq['status']] ?? ['대기', 'bg-gray-100 text-gray-700 border-gray-200'];
             ?>
               <tr class="hover:bg-gray-50/80 transition-colors">
-                <td class="py-3.5 px-4 text-center text-gray-400 font-mono"><?= (int)$inq['id'] ?></td>
-                <td class="py-3.5 px-4 text-center">
+                <td class="py-3.5 px-4 text-center text-gray-400 font-mono whitespace-nowrap"><?= (int)$inq['id'] ?></td>
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
                   <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border <?= $st[1] ?>">
                     <?= $st[0] ?>
                   </span>
                 </td>
-                <td class="py-3.5 px-4 font-medium text-gray-800">
+                <td class="py-3.5 px-4 font-medium text-gray-800 whitespace-nowrap">
                   <?= htmlspecialchars($inq['book_type']) ?>
                 </td>
                 <td class="py-3.5 px-4">
@@ -84,26 +84,27 @@ $statusLabels = [
                     <?= htmlspecialchars(mb_substr(strip_tags($inq['content']), 0, 80)) ?>
                   </p>
                 </td>
-                <td class="py-3.5 px-4">
+                <td class="py-3.5 px-4 whitespace-nowrap">
                   <span class="font-semibold text-gray-900 block"><?= htmlspecialchars($inq['name']) ?></span>
                   <span class="text-[11px] text-gray-500 font-mono"><?= htmlspecialchars($inq['phone']) ?></span>
                 </td>
-                <td class="py-3.5 px-4 text-center">
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
                   <?php if (!empty($inq['file_path'])): ?>
                     <a href="<?= htmlspecialchars($inq['file_path']) ?>" target="_blank"
-                       class="inline-flex items-center text-blue-600 hover:text-blue-800 text-xs gap-0.5" title="첨부파일 다운로드">
+                       class="inline-flex items-center text-blue-600 hover:text-blue-800 text-xs gap-0.5 font-semibold" title="첨부파일 다운로드">
                       <span class="material-symbols-outlined text-base">download</span>
+                      <span>파일</span>
                     </a>
                   <?php else: ?>
                     <span class="text-gray-300">-</span>
                   <?php endif; ?>
                 </td>
-                <td class="py-3.5 px-4 text-center text-[11px] text-gray-500 font-mono">
+                <td class="py-3.5 px-4 text-center text-[11px] text-gray-500 font-mono whitespace-nowrap">
                   <?= date('Y-m-d H:i', strtotime($inq['created_at'])) ?>
                 </td>
-                <td class="py-3.5 px-4 text-center">
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
                   <a href="/admin/inquiries/<?= (int)$inq['id'] ?>"
-                     class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs font-semibold transition-colors">
+                     class="inline-block px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap">
                     상세보기
                   </a>
                 </td>
