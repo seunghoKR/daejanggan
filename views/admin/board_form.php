@@ -80,13 +80,13 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
         <p class="text-[11px] text-gray-400 mt-1">새 파일을 선택하면 기존 파일이 교체됩니다.</p>
       </div>
 
-      <!-- 본문 내용 (HTML/Text) -->
+      <!-- 본문 내용 (위지윅 에디터) -->
       <div>
         <label class="text-xs font-semibold text-gray-700 mb-1.5 block">
           게시글 본문 내용 <span class="text-red-500">*</span>
         </label>
-        <textarea name="content" rows="14" required placeholder="내용을 작성하세요 (HTML 태그 사용 가능)"
-                  class="w-full border border-gray-300 rounded-lg p-3.5 text-xs font-mono text-gray-800 outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed"><?= htmlspecialchars($post['content'] ?? '') ?></textarea>
+        <textarea name="content" id="boardContent" rows="16" required placeholder="내용을 작성하세요"
+                  class="w-full border border-gray-300 rounded-lg p-3.5 text-xs font-mono text-gray-800"><?= htmlspecialchars($post['content'] ?? '') ?></textarea>
       </div>
 
       <!-- 저장 버튼 -->
@@ -100,3 +100,36 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
     </div>
   </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof CKEDITOR !== 'undefined' && document.getElementById('boardContent')) {
+    CKEDITOR.replace('boardContent', {
+      height: 450,
+      language: 'ko',
+      font_names: 'Noto Sans KR/Noto Sans KR, sans-serif;' +
+                  '맑은 고딕/Malgun Gothic, sans-serif;' +
+                  '돋움/Dotum, sans-serif;' +
+                  '굴림/Gulim, sans-serif;' +
+                  '바탕/Batang, serif;' +
+                  '궁서/Gungsuh, serif;' +
+                  'Arial/Arial, Helvetica, sans-serif;' +
+                  'Times New Roman/Times New Roman, Times, serif;',
+      fontSize_sizes: '8/8px;9/9px;10/10px;11/11px;12/12px;14/14px;16/16px;18/18px;20/20px;24/24px;28/28px;36/36px;48/48px;',
+      allowedContent: true,
+      extraAllowedContent: '*(*)[*]{*};'
+    });
+  }
+
+  // 폼 제출 전 동기화
+  document.querySelectorAll('form').forEach(function(form) {
+    form.addEventListener('submit', function() {
+      if (typeof CKEDITOR !== 'undefined') {
+        for (var instance in CKEDITOR.instances) {
+          CKEDITOR.instances[instance].updateElement();
+        }
+      }
+    });
+  });
+});
+</script>

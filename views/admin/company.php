@@ -32,28 +32,12 @@ $companyIntro = $companyIntro ?? ($settings['company_intro_html']['key_value'] ?
       </div>
 
       <div class="p-5">
-        <label class="text-xs font-semibold text-gray-700 mb-2 block">소개글 내용 (HTML)</label>
+        <label class="text-xs font-semibold text-gray-700 mb-2 block">소개글 내용 편집 (위지윅 에디터)</label>
         <textarea name="company_intro_html" id="companyIntroHtml" rows="18"
-                  class="w-full border border-gray-300 rounded-xl p-4 font-mono text-xs text-gray-800 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none leading-relaxed"><?= htmlspecialchars($companyIntro) ?></textarea>
+                  class="w-full border border-gray-300 rounded-xl p-4 font-mono text-xs text-gray-800"><?= htmlspecialchars($companyIntro) ?></textarea>
         <p class="text-[11px] text-gray-400 mt-2">
-          💡 &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;img&gt; 등 자유롭게 HTML 마크업을 사용하실 수 있습니다.
+          💡 워드나 한글처럼 자유롭게 글꼴, 크기, 색상, 이미지, 표를 편집하실 수 있습니다. [소스] 버튼을 누르면 원본 HTML도 수정 가능합니다.
         </p>
-      </div>
-
-      <!-- 실시간 미리보기 토글 영역 -->
-      <div class="px-5 py-4 border-t border-gray-100 bg-gray-50/50" x-data="{ showPreview: true }">
-        <div class="flex items-center justify-between mb-3">
-          <button type="button" @click="showPreview = !showPreview" class="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline">
-            <span class="material-symbols-outlined text-sm" x-text="showPreview ? 'visibility_off' : 'visibility'"></span>
-            <span x-text="showPreview ? '실시간 미리보기 닫기' : '실시간 렌더링 미리보기 열기'"></span>
-          </button>
-          <span class="text-[11px] text-gray-400">사용자 화면과 동일하게 렌더링됩니다.</span>
-        </div>
-
-        <div x-show="showPreview" id="previewBox"
-             class="p-6 bg-white border border-gray-200 rounded-xl prose max-w-none text-sm text-gray-800 min-h-[150px]">
-          <?= $companyIntro ?>
-        </div>
       </div>
 
       <div class="px-5 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
@@ -69,11 +53,34 @@ $companyIntro = $companyIntro ?? ($settings['company_intro_html']['key_value'] ?
 </div>
 
 <script>
-// 실시간 미리보기 동기화
-document.getElementById('companyIntroHtml')?.addEventListener('input', function(e) {
-  const box = document.getElementById('previewBox');
-  if (box) {
-    box.innerHTML = e.target.value;
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof CKEDITOR !== 'undefined' && document.getElementById('companyIntroHtml')) {
+    CKEDITOR.replace('companyIntroHtml', {
+      height: 480,
+      language: 'ko',
+      font_names: 'Noto Sans KR/Noto Sans KR, sans-serif;' +
+                  '맑은 고딕/Malgun Gothic, sans-serif;' +
+                  '돋움/Dotum, sans-serif;' +
+                  '굴림/Gulim, sans-serif;' +
+                  '바탕/Batang, serif;' +
+                  '궁서/Gungsuh, serif;' +
+                  'Arial/Arial, Helvetica, sans-serif;' +
+                  'Times New Roman/Times New Roman, Times, serif;',
+      fontSize_sizes: '8/8px;9/9px;10/10px;11/11px;12/12px;14/14px;16/16px;18/18px;20/20px;24/24px;28/28px;36/36px;48/48px;',
+      allowedContent: true,
+      extraAllowedContent: '*(*)[*]{*};'
+    });
   }
+
+  // 폼 제출 전 내용 자동 동기화
+  document.querySelectorAll('form').forEach(function(form) {
+    form.addEventListener('submit', function() {
+      if (typeof CKEDITOR !== 'undefined') {
+        for (var instance in CKEDITOR.instances) {
+          CKEDITOR.instances[instance].updateElement();
+        }
+      }
+    });
+  });
 });
 </script>
