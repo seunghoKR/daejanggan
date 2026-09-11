@@ -18,14 +18,20 @@
 
 <!-- CKEditor 4 Full Package WYSIWYG 에디터 -->
 <script src="https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"></script>
+<script>
+  if (typeof CKEDITOR !== 'undefined') {
+    CKEDITOR.config.versionCheck = false;
+  }
+</script>
 
 <style>
   body { font-family: 'Noto Sans KR', sans-serif; background: #f4f3f1; }
   .admin-sidebar a.active { background: #1c2833; color: #fff; }
-  /* CKEditor 커스텀 스타일 */
+  /* CKEditor 커스텀 스타일 & 버전 경고창 완전 숨김 */
   .cke_chrome { border-radius: 0.75rem !important; border-color: #d1d5db !important; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important; overflow: hidden; }
   .cke_top { background: #f9fafb !important; border-bottom: 1px solid #e5e7eb !important; padding: 6px 8px !important; }
   .cke_bottom { background: #f9fafb !important; border-top: 1px solid #e5e7eb !important; }
+  .cke_notification_warning, .cke_notification, .cke_notifications_area { display: none !important; visibility: hidden !important; height: 0 !important; opacity: 0 !important; }
 </style>
 </head>
 <body class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: true }">
