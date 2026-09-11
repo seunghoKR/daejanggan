@@ -94,7 +94,7 @@ $site = $GLOBALS['site'] ?? [];
         <span class="text-gray-300">|</span>
         <span>개인정보보호책임자: <?= htmlspecialchars($site['privacy_officer'] ?? '배용하') ?></span>
         <span class="text-gray-300">|</span>
-        <span>호스팅 서비스 제공자: <strong class="text-on-surface"><?= htmlspecialchars($site['hosting_company'] ?? '(주)스마일서브 (iwinv.com)') ?></strong></span>
+        <span>호스팅 서비스 제공자: <strong class="text-on-surface"><?= htmlspecialchars($site['hosting_company'] ?? '(주)스마일서브 (iwinv.kr)') ?></strong></span>
       </div>
 
       <!-- 3행: 에스크로 구매안전서비스 안내 -->
