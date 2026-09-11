@@ -815,8 +815,8 @@ final class AdminController
     {
         self::boot();
 
-        $allowed = ['site_name','ceo_name','biz_number','cs_phone','cs_hours',
-                    'email','bank_account','address','shipping_fee','free_shipping_min',
+        $allowed = ['site_name','ceo_name','biz_number','mail_order_number','privacy_officer','hosting_company',
+                    'cs_phone','cs_hours','email','bank_account','address','shipping_fee','free_shipping_min',
                     'point_rate','kakao_map_key',
                     'inicis_mid','inicis_signkey','inicis_keypass','inicis_test',
                     'inicis_card_use','inicis_bank_use','inicis_vbank_use','inicis_kakaopay',
