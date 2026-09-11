@@ -56,15 +56,23 @@ final class UserController
             header('Location: /mypage');
             exit;
         }
+        $_SESSION['_reg_time'] = time(); // 스팸 봇 방지용 진입 시각 기록
         $cartCount = Cart::count();
         include APP_ROOT . '/views/user/register.php';
     }
 
     // ----------------------------------------------------------------
-    // 회원가입 처리 (실명, 닉네임, 전화번호, 이메일, 주소, 알림 설정)
+    // 회원가입 처리 (실명, 닉네임, 전화번호, 이메일, 주소, 알림 설정, 4중 스팸 방어)
     // ----------------------------------------------------------------
     public static function doRegister(array $params = []): void
     {
+        // 1) 🪤 허니팟 트랩 검증 (봇이 숨김 필드를 채운 경우 즉시 차단)
+        if (!empty($_POST['hp_website'])) {
+            $_SESSION['_reg_errors'] = ['비정상적인 접근이 감지되었습니다.'];
+            header('Location: /register');
+            exit;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $name     = trim($_POST['name'] ?? '');
@@ -82,8 +90,22 @@ final class UserController
         $notifySms      = isset($_POST['notify_sms']) ? 1 : 0;
         $notifyEmail    = isset($_POST['notify_email']) ? 1 : 0;
 
-        // 기본 검증
         $errors = [];
+
+        // 2) ⏱️ 초고속 제출 방지 Time-Trap (2초 이내 제출 시 봇으로 간주)
+        $regTime = (int)($_SESSION['_reg_time'] ?? 0);
+        if ($regTime === 0 || (time() - $regTime < 2)) {
+            $errors[] = '너무 빠른 요청입니다. 잠시 후 다시 시도해 주세요.';
+        }
+
+        // 3) 🧩 자동가입방지 산술 캡차 검증
+        require_once APP_ROOT . '/core/Captcha.php';
+        $captchaAns = trim($_POST['captcha'] ?? '');
+        if (empty($captchaAns) || !Captcha::verify($captchaAns)) {
+            $errors[] = '자동가입방지 퀴즈의 정답이 올바르지 않습니다.';
+        }
+
+        // 기본 검증
         if (strlen($username) < 4) {
             $errors[] = '아이디는 4자 이상이어야 합니다.';
         }
@@ -96,11 +118,23 @@ final class UserController
         if (empty($name)) {
             $errors[] = '실명을 입력해 주세요.';
         }
-        if (empty($phone)) {
-            $errors[] = '휴대전화번호를 입력해 주세요.';
+
+        // 4) 📞 국내 표준 전화번호 유효성 정규식 검증
+        if (empty($phone) || !preg_match('/^(01[016789]-?[0-9]{3,4}-?[0-9]{4}|0[2-8][0-9]?-?[0-9]{3,4}-?[0-9]{4})$/', $phone)) {
+            $errors[] = '올바른 국내 전화번호(010-0000-0000)를 입력해 주세요.';
         }
+
+        // 5) 📧 이메일 형식 및 스팸/해외 악성 도메인 블랙리스트 필터링
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = '유효한 이메일 주소를 입력해 주세요.';
+        } else {
+            $emailParts = explode('@', $email);
+            $domain = strtolower($emailParts[1] ?? '');
+            $spamTlds = ['ru', 'su', 'top', 'xyz', 'click', 'link', 'cn'];
+            $tld = pathinfo($domain, PATHINFO_EXTENSION);
+            if (in_array($tld, $spamTlds, true) || in_array($domain, ['mail.ru','yandex.ru','bk.ru','list.ru','inbox.ru','tempmail.com','guerrillamail.com','10minutemail.com'], true)) {
+                $errors[] = '사용할 수 없거나 스팸 위험이 있는 이메일 도메인입니다.';
+            }
         }
 
         // 중복 확인
@@ -124,8 +158,8 @@ final class UserController
 
         $hash = password_hash($password, PASSWORD_ARGON2ID);
         Database::execute(
-            "INSERT INTO users (username, password_hash, password_type, name, nickname, email, phone, zipcode, address1, address2, telegram_id, notify_kakao, notify_telegram, notify_sms, notify_email)
-             VALUES (?, ?, 'ARGON2ID', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO users (username, password_hash, password_type, name, nickname, email, phone, zipcode, address1, address2, telegram_id, notify_kakao, notify_telegram, notify_sms, notify_email, role, member_group, status)
+             VALUES (?, ?, 'ARGON2ID', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'USER', '일반회원', 'ACTIVE')",
             [$username, $hash, $name, $nickname, $email, $phone, $zipcode, $address1, $address2, $telegramId, $notifyKakao, $notifyTelegram, $notifySms, $notifyEmail]
         );
 

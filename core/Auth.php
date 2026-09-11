@@ -64,11 +64,15 @@ final class Auth
     public static function login(string $username, string $password): bool
     {
         $user = Database::fetchOne(
-            "SELECT id, password_hash, password_type, role, name FROM users WHERE username = ? LIMIT 1",
+            "SELECT id, password_hash, password_type, role, name, status, member_group FROM users WHERE username = ? LIMIT 1",
             [trim($username)]
         );
 
         if ($user === false) {
+            return false;
+        }
+
+        if (isset($user['status']) && $user['status'] === 'BLOCKED') {
             return false;
         }
 
@@ -96,9 +100,10 @@ final class Auth
         session_regenerate_id(true);
 
         $_SESSION[self::SESSION_KEY] = [
-            'id'   => (int)$user['id'],
-            'name' => $user['name'],
-            'role' => $user['role'],
+            'id'           => (int)$user['id'],
+            'name'         => $user['name'],
+            'role'         => $user['role'],
+            'member_group' => $user['member_group'] ?? '일반회원',
         ];
 
         return true;

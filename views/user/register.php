@@ -1,6 +1,8 @@
 <?php
 $pageTitle = '회원가입';
 include APP_ROOT . '/views/layouts/header.php';
+require_once APP_ROOT . '/core/Captcha.php';
+$captchaChallenge = Captcha::generate();
 $regErrors = $_SESSION['_reg_errors'] ?? [];
 $regInput  = $_SESSION['_reg_input']  ?? [];
 unset($_SESSION['_reg_errors'], $_SESSION['_reg_input']);
@@ -28,6 +30,12 @@ unset($_SESSION['_reg_errors'], $_SESSION['_reg_input']);
 
   <form action="/register" method="POST"
         class="bg-surface rounded-2xl border border-outline-variant/80 p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+
+    <!-- Honeypot 스팸 봇 트랩 (사람 눈에는 보이지 않음) -->
+    <div style="opacity:0; position:absolute; top:0; left:0; height:0; width:0; z-index:-1; overflow:hidden;" aria-hidden="true">
+      <label for="hp_website">웹사이트</label>
+      <input type="text" id="hp_website" name="hp_website" tabindex="-1" autocomplete="off" value="" />
+    </div>
 
     <!-- 1. 기본 계정 정보 -->
     <div class="flex flex-col gap-4">
@@ -169,6 +177,28 @@ unset($_SESSION['_reg_errors'], $_SESSION['_reg_input']);
       </div>
     </div>
 
+    <!-- 5. 자동가입 방지 퀴즈 (스팸 봇 차단) -->
+    <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-xl border border-outline-variant/60">
+      <label class="text-xs font-semibold text-gray-700 flex items-center justify-between flex-wrap gap-1">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base text-secondary">security</span>
+          자동가입방지 퀴즈 *
+        </span>
+        <span class="text-[11px] text-gray-400 font-normal">스팸 방지를 위해 계산식의 정답 숫자를 입력해 주세요</span>
+      </label>
+      <div class="flex items-center gap-3">
+        <div class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold font-mono text-primary shadow-inner tracking-wider select-none" id="captcha_display">
+          <?= htmlspecialchars($captchaChallenge) ?>
+        </div>
+        <input type="number" name="captcha" required placeholder="정답 숫자"
+               class="w-28 bg-white border border-outline-variant rounded-lg px-3 py-2 text-xs text-on-surface font-mono font-bold focus:ring-1 focus:ring-primary outline-none text-center"/>
+        <button type="button" onclick="refreshCaptcha()" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-medium transition-colors flex items-center gap-1" title="새로운 문제 받기">
+          <span class="material-symbols-outlined text-sm">refresh</span>
+          새로고침
+        </button>
+      </div>
+    </div>
+
     <!-- 제출 버튼 -->
     <button type="submit"
             class="w-full py-3.5 bg-[#07131e] text-white rounded-xl font-bold text-sm hover:bg-[#1c2833] transition-all shadow-md mt-2">
@@ -182,6 +212,20 @@ unset($_SESSION['_reg_errors'], $_SESSION['_reg_input']);
 </main>
 
 <script>
+function refreshCaptcha() {
+  fetch('/api/captcha')
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.challenge) {
+        document.getElementById('captcha_display').innerText = data.challenge;
+      }
+    })
+    .catch(() => {
+      // fallback
+      location.reload();
+    });
+}
+
 function execDaumPostcode() {
   new daum.Postcode({
     oncomplete: function(data) {

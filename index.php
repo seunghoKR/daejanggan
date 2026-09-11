@@ -112,9 +112,18 @@ Router::post('/admin/banners/create', [AdminController::class, 'bannerStore']);
 Router::get('/admin/banners/:id/edit',[AdminController::class, 'bannerEdit']);
 Router::post('/admin/banners/:id/edit',[AdminController::class, 'bannerUpdate']);
 Router::post('/admin/banners/:id/delete',[AdminController::class, 'bannerDelete']);
-Router::post('/admin/banners/:id/toggle',[AdminController::class, 'bannerToggle']);
-Router::get('/admin/members',         [AdminController::class, 'members']);
-Router::post('/admin/members/:id/points',[AdminController::class, 'adjustPoints']);
+Router::get('/api/captcha', function() {
+    require_once APP_ROOT . '/core/Captcha.php';
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['challenge' => Captcha::generate()]);
+});
+
+Router::get('/admin/members',                [AdminController::class, 'members']);
+Router::get('/admin/members/:id',           [AdminController::class, 'memberDetail']);
+Router::post('/admin/members/:id/update',   [AdminController::class, 'memberUpdate']);
+Router::post('/admin/members/:id/delete',   [AdminController::class, 'memberDelete']);
+Router::post('/admin/members/batch-delete', [AdminController::class, 'memberBatchDelete']);
+Router::post('/admin/members/:id/points',    [AdminController::class, 'adjustPoints']);
 
 // --- 관리자: 게시판 & 콘텐츠 관리 ---
 Router::get('/admin/company',               [AdminController::class, 'company']);

@@ -586,21 +586,37 @@ final class AdminController
     // ----------------------------------------------------------------
     // 회원 목록
     // ----------------------------------------------------------------
+    // ----------------------------------------------------------------
+    // 회원 목록 (검색, 등급/그룹 필터, 상태 필터)
+    // ----------------------------------------------------------------
     public static function members(array $params = []): void
     {
         self::boot();
 
-        $page    = max(1, (int)($_GET['page'] ?? 1));
-        $perPage = 20;
-        $offset  = ($page - 1) * $perPage;
-        $q       = trim($_GET['q'] ?? '');
+        $page        = max(1, (int)($_GET['page'] ?? 1));
+        $perPage     = 20;
+        $offset      = ($page - 1) * $perPage;
+        $q           = trim($_GET['q'] ?? '');
+        $groupFilter = trim($_GET['group'] ?? '');
+        $statusFilter= trim($_GET['status'] ?? '');
 
-        $where  = ['role = "USER"'];
+        $where  = ['1=1'];
         $bind   = [];
+
         if ($q !== '') {
-            $where[] = '(username LIKE ? OR name LIKE ? OR email LIKE ?)';
+            $where[] = '(username LIKE ? OR name LIKE ? OR nickname LIKE ? OR email LIKE ? OR phone LIKE ?)';
             $like    = "%$q%";
-            $bind    = [$like, $like, $like];
+            $bind    = array_merge($bind, [$like, $like, $like, $like, $like]);
+        }
+
+        if ($groupFilter !== '') {
+            $where[] = 'member_group = ?';
+            $bind[]  = $groupFilter;
+        }
+
+        if ($statusFilter !== '') {
+            $where[] = 'status = ?';
+            $bind[]  = $statusFilter;
         }
 
         $whereStr = implode(' AND ', $where);
@@ -609,13 +625,159 @@ final class AdminController
         )['cnt'] ?? 0);
 
         $members = Database::fetchAll(
-            "SELECT id, username, name, email, phone, points, created_at, last_login
+            "SELECT id, username, name, nickname, email, phone, points, role, member_group, status, admin_memo, telegram_id, notify_kakao, created_at, last_login
              FROM users WHERE $whereStr ORDER BY created_at DESC LIMIT ? OFFSET ?",
             array_merge($bind, [$perPage, $offset])
         );
 
+        // 등록된 전체 회원 그룹 목록 조회
+        $groupListRaw = Database::fetchAll("SELECT DISTINCT member_group FROM users WHERE member_group IS NOT NULL AND member_group != ''");
+        $existingGroups = array_column($groupListRaw, 'member_group');
+        $defaultGroups = ['일반회원', '특별회원', '우수회원', '저자/필진', '도서관/기관'];
+        $allGroups = array_values(array_unique(array_merge($defaultGroups, $existingGroups)));
+
         $totalPages = (int)ceil($total / $perPage);
         include APP_ROOT . '/views/admin/members.php';
+    }
+
+    // ----------------------------------------------------------------
+    // 회원 상세 정보 조회 (AJAX)
+    // ----------------------------------------------------------------
+    public static function memberDetail(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $userId = (int)($params['id'] ?? 0);
+        $user = Database::fetchOne(
+            "SELECT id, username, name, nickname, email, phone, zipcode, address1, address2,
+                    points, role, member_group, status, admin_memo, telegram_id, created_at, last_login
+             FROM users WHERE id = ?",
+            [$userId]
+        );
+
+        if (!$user) {
+            echo json_encode(['success' => false, 'message' => '존재하지 않는 회원입니다.']);
+            exit;
+        }
+
+        echo json_encode(['success' => true, 'data' => $user], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 회원 정보 수정 (그룹 변경, 상태, 메모, 개인정보)
+    // ----------------------------------------------------------------
+    public static function memberUpdate(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $userId = (int)($params['id'] ?? 0);
+        $user = Database::fetchOne("SELECT id, role FROM users WHERE id = ?", [$userId]);
+        if (!$user) {
+            echo json_encode(['success' => false, 'message' => '존재하지 않는 회원입니다.']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+
+        $name        = trim((string)($input['name'] ?? ''));
+        $nickname    = trim((string)($input['nickname'] ?? '')) ?: $name;
+        $email       = trim((string)($input['email'] ?? ''));
+        $phone       = trim((string)($input['phone'] ?? ''));
+        $zipcode     = trim((string)($input['zipcode'] ?? ''));
+        $address1    = trim((string)($input['address1'] ?? ''));
+        $address2    = trim((string)($input['address2'] ?? ''));
+        $memberGroup = trim((string)($input['member_group'] ?? '일반회원')) ?: '일반회원';
+        $status      = in_array($input['status'] ?? '', ['ACTIVE', 'BLOCKED', 'WITHDRAWN'], true) ? $input['status'] : 'ACTIVE';
+        $adminMemo   = trim((string)($input['admin_memo'] ?? ''));
+        $role        = in_array($input['role'] ?? '', ['USER', 'ADMIN'], true) ? $input['role'] : 'USER';
+        $points      = max(0, (int)($input['points'] ?? 0));
+        $newPassword = trim((string)($input['password'] ?? ''));
+
+        if (empty($name)) {
+            echo json_encode(['success' => false, 'message' => '회원 실명을 입력해 주세요.']);
+            exit;
+        }
+
+        if (!empty($newPassword)) {
+            if (strlen($newPassword) < 6) {
+                echo json_encode(['success' => false, 'message' => '비밀번호는 최소 6자 이상이어야 합니다.']);
+                exit;
+            }
+            $hash = password_hash($newPassword, PASSWORD_ARGON2ID);
+            Database::execute(
+                "UPDATE users SET name = ?, nickname = ?, email = ?, phone = ?, zipcode = ?, address1 = ?, address2 = ?,
+                        member_group = ?, status = ?, admin_memo = ?, role = ?, points = ?, password_hash = ?, password_type = 'ARGON2ID'
+                 WHERE id = ?",
+                [$name, $nickname, $email, $phone, $zipcode, $address1, $address2, $memberGroup, $status, $adminMemo, $role, $points, $hash, $userId]
+            );
+        } else {
+            Database::execute(
+                "UPDATE users SET name = ?, nickname = ?, email = ?, phone = ?, zipcode = ?, address1 = ?, address2 = ?,
+                        member_group = ?, status = ?, admin_memo = ?, role = ?, points = ?
+                 WHERE id = ?",
+                [$name, $nickname, $email, $phone, $zipcode, $address1, $address2, $memberGroup, $status, $adminMemo, $role, $points, $userId]
+            );
+        }
+
+        echo json_encode(['success' => true, 'message' => '회원 정보가 성공적으로 수정되었습니다.']);
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 회원 삭제 (단일 삭제 — 관리자 계정 보호)
+    // ----------------------------------------------------------------
+    public static function memberDelete(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $userId = (int)($params['id'] ?? 0);
+        $user = Database::fetchOne("SELECT id, role, username FROM users WHERE id = ?", [$userId]);
+
+        if (!$user) {
+            echo json_encode(['success' => false, 'message' => '존재하지 않는 회원입니다.']);
+            exit;
+        }
+
+        if ($user['role'] === 'ADMIN') {
+            echo json_encode(['success' => false, 'message' => '최고 관리자 계정은 삭제할 수 없습니다.']);
+            exit;
+        }
+
+        Database::execute("DELETE FROM users WHERE id = ?", [$userId]);
+        echo json_encode(['success' => true, 'message' => "회원 [{$user['username']}] 계정이 삭제되었습니다."]);
+        exit;
+    }
+
+    // ----------------------------------------------------------------
+    // 회원 일괄 삭제 (스팸 봇 다중 정리용)
+    // ----------------------------------------------------------------
+    public static function memberBatchDelete(array $params = []): void
+    {
+        self::boot();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $ids = array_map('intval', (array)($input['ids'] ?? []));
+        $ids = array_filter($ids, fn($id) => $id > 0);
+
+        if (empty($ids)) {
+            echo json_encode(['success' => false, 'message' => '삭제할 회원을 1명 이상 선택해 주세요.']);
+            exit;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        // 관리자 계정은 보호
+        Database::execute(
+            "DELETE FROM users WHERE id IN ($placeholders) AND role != 'ADMIN'",
+            $ids
+        );
+
+        echo json_encode(['success' => true, 'message' => count($ids) . '명의 회원이 성공적으로 삭제되었습니다.']);
+        exit;
     }
 
     // ----------------------------------------------------------------
@@ -633,6 +795,7 @@ final class AdminController
             [$amount, $userId]
         );
         echo json_encode(['success' => true]);
+        exit;
     }
 
     // ----------------------------------------------------------------
