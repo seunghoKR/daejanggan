@@ -20,7 +20,7 @@ if (empty($existingImages) && !empty($book['cover_image']) && $book['cover_image
 include APP_ROOT . '/views/layouts/admin_layout.php';
 ?>
 
-<div class="max-w-5xl mx-auto flex flex-col gap-6" x-data="bookFormManager(<?= htmlspecialchars(json_encode($existingImages, JSON_UNESCAPED_SLASHES)) ?>)">
+<div class="w-full flex flex-col gap-6" x-data="bookFormManager(<?= htmlspecialchars(json_encode($existingImages, JSON_UNESCAPED_SLASHES)) ?>)">
 
   <!-- 상단 네비게이션 헤더 -->
   <div class="flex items-center justify-between bg-white rounded-2xl border border-gray-200 px-6 py-4 shadow-sm">

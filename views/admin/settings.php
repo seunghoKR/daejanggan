@@ -7,7 +7,7 @@ $activeMenu = 'settings';
 include APP_ROOT . '/views/layouts/admin_layout.php';
 ?>
 
-<div x-data="settingsManager()" class="max-w-4xl pb-16">
+<div x-data="settingsManager()" class="w-full pb-16">
   <form action="/admin/settings" method="POST" class="flex flex-col gap-6">
 
     <!-- 1. 쇼핑몰 기본 정보 -->

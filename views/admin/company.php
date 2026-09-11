@@ -8,7 +8,7 @@ include APP_ROOT . '/views/layouts/admin_layout.php';
 $companyIntro = $companyIntro ?? ($settings['company_intro_html']['key_value'] ?? '');
 ?>
 
-<div class="max-w-5xl pb-16">
+<div class="w-full pb-16">
   <div class="mb-6 flex items-center justify-between">
     <div>
       <h2 class="text-lg font-bold text-gray-800">회사소개 콘텐츠 관리</h2>

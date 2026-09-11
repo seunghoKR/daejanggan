@@ -15,7 +15,7 @@ $activeMenu = 'board_' . $type;
 include APP_ROOT . '/views/layouts/admin_layout.php';
 ?>
 
-<div class="max-w-7xl pb-16">
+<div class="w-full pb-16">
   <!-- 상단 액션 바 -->
   <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>

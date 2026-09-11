@@ -16,7 +16,7 @@ $activeMenu = 'board_' . $type;
 include APP_ROOT . '/views/layouts/admin_layout.php';
 ?>
 
-<div class="max-w-4xl pb-16">
+<div class="w-full pb-16">
   <div class="mb-4">
     <a href="/admin/board/<?= htmlspecialchars($type) ?>" class="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1">
       <span class="material-symbols-outlined text-sm">arrow_back</span>

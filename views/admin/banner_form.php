@@ -12,7 +12,7 @@ if ($curType === 'HERO') $curType = 'HERO_MAIN';
 if ($curType === 'POSTER' || $curType === 'EVENT') $curType = 'EVENT_GRID';
 ?>
 
-<div class="max-w-3xl bg-white rounded-xl border border-gray-200 p-6 shadow-sm" x-data="{
+<div class="w-full bg-white rounded-xl border border-gray-200 p-6 shadow-sm" x-data="{
   pos: '<?= htmlspecialchars($curType) ?>',
   guideMap: {
     'HERO_MAIN': { size: '1280 x 440px (또는 920 x 420px)', desc: '메인 상단 중앙의 1280px 풀와이드 대표 슬라이더 배너입니다 (자동 리사이징 최적화 지원).' },
